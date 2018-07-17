@@ -1,6 +1,8 @@
 package com.joesmate.entity
 
 import android.app.Application
+import com.jostmate.logs.LogMsImpl
+import com.jostmate.logs.LoggerFactory
 
 class App : Application() {
     companion object {
@@ -10,9 +12,11 @@ class App : Application() {
         }
     }
 
+    var LogMs: LogMsImpl? = null
     override fun onCreate() {
         super.onCreate()
         mApp = this
+        LogMs = LoggerFactory.CreateLogger(this.applicationContext)
     }
 
 
