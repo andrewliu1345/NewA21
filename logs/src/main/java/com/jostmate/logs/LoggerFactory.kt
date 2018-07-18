@@ -22,7 +22,7 @@ class LoggerFactory {
                         var slevel = properties.getProperty("logger.level")
                         var classname = "com.jostmate.logs.LogFor${properties.getProperty("logger.factory")}"
                         var level = enumValueOf<EnumLevel>(slevel)
-                        var cClass = Class.forName(classname)//反射找到对映的工厂
+                        var cClass = Class.forName(classname)//反射找到对映的类
                         var obj = cClass.newInstance()
                         if (obj == null) {
                             throw Exception("完法找到类")

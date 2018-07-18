@@ -16,25 +16,25 @@ abstract class LogMsImpl {
     /**
      *
      */
-    abstract fun v(tag: String, msg: String, vararg args: Any)
+    abstract fun v(tag: String?, msg: String?, vararg args: Any?)
 
     /**
      *
      */
-    abstract fun i(tag: String, msg: String, vararg args: Any)
+    abstract fun i(tag: String?, msg: String?, vararg args: Any?)
 
     /**
      *
      */
-    abstract fun e(tag: String, msg: String, vararg args: Any)
+    abstract fun e(tag: String?, msg: String?, vararg args: Any?)
 
     /**
      *
      */
-    abstract fun e(tag: String, msg: String, tr: Throwable)
+    abstract fun e(tag: String?, msg: String?, tr: Throwable?)
 
     /**
      *
      */
-    abstract fun d(tag: String, msg: String, vararg args: Any)
+    abstract fun d(tag: String?, msg: String?, vararg args: Any?)
 }

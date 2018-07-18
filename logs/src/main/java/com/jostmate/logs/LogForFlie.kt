@@ -19,26 +19,26 @@ class LogForFlie : LogMsImpl() {
     private var VERBOSE = "Verbose"
 
 
-    override fun d(tag: String, msg: String, vararg args: Any) {
+    override fun d(tag: String?, msg: String?, vararg args: Any?) {
         if (_Level == EnumLevel.ALL || _Level == EnumLevel.DEBUG)
-            writeLogInFileSystem("[$DEBUG] $tag:${String.format(msg, args)}")
+            writeLogInFileSystem("[$DEBUG] $tag:${String.format(msg!!, args)}")
     }
 
-    override fun e(tag: String, msg: String, tr: Throwable) {
-        writeLogInFileSystem("[$ERROR] $tag:${String.format(msg, tr.message)}")
+    override fun e(tag: String?, msg: String?, tr: Throwable?) {
+        writeLogInFileSystem("[$ERROR] $tag:${String.format(msg!!, tr?.message!!)}")
     }
 
-    override fun e(tag: String, msg: String, vararg args: Any) {
-        writeLogInFileSystem("[$ERROR] $tag:${String.format(msg, args)}")
+    override fun e(tag: String?, msg: String?, vararg args: Any?) {
+        writeLogInFileSystem("[$ERROR] $tag:${String.format(msg!!, args)}")
     }
 
-    override fun i(tag: String, msg: String, vararg args: Any) {
+    override fun i(tag: String?, msg: String?, vararg args: Any?) {
         if (_Level == EnumLevel.ALL || _Level == EnumLevel.DEBUG || _Level == EnumLevel.INFO)
-            writeLogInFileSystem("[$INFO] $tag:${String.format(msg, args)}")
+            writeLogInFileSystem("[$INFO] $tag:${String.format(msg!!, args)}")
     }
 
-    override fun v(tag: String, msg: String, vararg args: Any) {
-        writeLogInFileSystem("[$VERBOSE] $tag:${String.format(msg, args)}")
+    override fun v(tag: String?, msg: String?, vararg args: Any?) {
+        writeLogInFileSystem("[$VERBOSE] $tag:${String.format(msg!!, args)}")
     }
 
     private fun writeLogInFileSystem(content: String) {
