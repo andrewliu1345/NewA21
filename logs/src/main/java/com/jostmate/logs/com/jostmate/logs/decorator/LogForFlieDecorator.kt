@@ -1,6 +1,8 @@
-package com.jostmate.logs
+package com.jostmate.logs.com.jostmate.logs.decorator
 
 import android.os.Environment
+import com.jostmate.logs.EnumLevel
+import com.jostmate.logs.LogMsImpl
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -12,38 +14,46 @@ import java.text.SimpleDateFormat
  * @create 2018/7/17
  * @Describe
  */
-class LogForFlie : LogMsImpl() {
+class LogForFlieDecorator(logger: LogMsImpl) : BaseLoggerDecorator(logger) {
     private val ERROR = "Error"
     private val DEBUG = "Debug"
     private val INFO = "Info"
     private var VERBOSE = "Verbose"
 
+//    constructor(logger: LogMsImpl) : super(logger) {
+//
+//    }
 
     override fun d(tag: String?, msg: String?, vararg args: Any?) {
         if (_Level == EnumLevel.ALL || _Level == EnumLevel.DEBUG)
             writeLogInFileSystem("[$DEBUG] $tag:${String.format(msg!!, args)}")
+        _Logger!!.d(tag, msg, args)
     }
 
     override fun e(tag: String?, msg: String?, tr: Throwable?) {
         writeLogInFileSystem("[$ERROR] $tag:${String.format(msg!!, tr?.message!!)}")
+        _Logger!!.e(tag, msg, tr)
     }
 
     override fun e(tag: String?, msg: String?, vararg args: Any?) {
         writeLogInFileSystem("[$ERROR] $tag:${String.format(msg!!, args)}")
+        _Logger!!.e(tag, msg, args)
     }
 
     override fun i(tag: String?, msg: String?, vararg args: Any?) {
         if (_Level == EnumLevel.ALL || _Level == EnumLevel.DEBUG || _Level == EnumLevel.INFO)
             writeLogInFileSystem("[$INFO] $tag:${String.format(msg!!, args)}")
+        _Logger!!.i(tag, msg, args)
     }
 
     override fun v(tag: String?, msg: String?, vararg args: Any?) {
         writeLogInFileSystem("[$VERBOSE] $tag:${String.format(msg!!, args)}")
+        _Logger!!.v(tag, msg, args)
     }
 
     private fun writeLogInFileSystem(content: String) {
         var content = content
-        synchronized(LogForFlie::class.java) {
+        synchronized(LogForFlieDecorator::class.java) {
             val sdcardPath = Environment.getExternalStorageDirectory().absolutePath
             val dirPath = "$sdcardPath/LogMg/"
             var file: File? = null

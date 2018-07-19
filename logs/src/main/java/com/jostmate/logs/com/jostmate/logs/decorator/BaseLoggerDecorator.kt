@@ -7,8 +7,8 @@ import com.jostmate.logs.LogMsImpl
  * @create 2018/7/17
  * @Describe
  */
-class BaseLoggerDecorator : LogMsImpl {
-    var _Logger: LogMsImpl?=null
+open class BaseLoggerDecorator : LogMsImpl {
+    var _Logger: LogMsImpl? = null
 
     constructor(logger: LogMsImpl) {
         this._Logger = logger

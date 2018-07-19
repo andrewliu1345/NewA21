@@ -1,8 +1,11 @@
 package com.jostmate.logs
 
 import android.content.Context
+import com.jostmate.logs.com.jostmate.logs.decorator.LogForCatDecorator
+import com.jostmate.logs.com.jostmate.logs.decorator.LogForFlieDecorator
 import java.util.*
 import java.util.concurrent.locks.Lock
+import java.util.logging.Logger
 
 /**
  * @author andrewliu
@@ -12,24 +15,30 @@ import java.util.concurrent.locks.Lock
 class LoggerFactory {
     companion object {
         var log: LogMsImpl? = null
-        fun CreateLogger(context: Context): LogMsImpl? {
+        fun createLogger(context: Context): LogMsImpl? {
             if (log == null)
                 synchronized(this) {
                     if (log == null) {
                         var properties: Properties = Properties()
-                        var _in = context.assets.open("app.config")//读取配置文件
+                        var _in = context.assets.open("Logger.config")//读取配置文件
                         properties.load(_in)
                         var slevel = properties.getProperty("logger.level")
-                        var classname = "com.jostmate.logs.LogFor${properties.getProperty("logger.factory")}"
-                        var level = enumValueOf<EnumLevel>(slevel)
-                        var cClass = Class.forName(classname)//反射找到对映的类
-                        var obj = cClass.newInstance()
-                        if (obj == null) {
-                            throw Exception("完法找到类")
+                        var type = properties.getProperty("logger.factory")
+                        log = Logger()
+                        when (type) {
+                            "cat" -> {
+                                log = LogForCatDecorator(log!!)//控制台Log装饰器
+                            }
+                            "file" -> {
+                                log = LogForFlieDecorator(log!!)//文件Log装饰器
+                            }
+                            "all" -> {
+                                log = LogForCatDecorator(log!!)
+                                log = LogForFlieDecorator(log!!)
+                            }
                         }
-                        var factory = obj as LogMsImpl//实例化工厂
-                        factory.setLevel(level)
-                        log = factory
+                        val level = enumValueOf<EnumLevel>(slevel)
+                        log?.setLevel(level)
                     }
 
                 }

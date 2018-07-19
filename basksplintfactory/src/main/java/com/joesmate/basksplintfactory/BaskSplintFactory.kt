@@ -22,7 +22,7 @@ class BaskSplintFactory : FactoryImpl {
         var cClass = Class.forName(classname)//反射找到对映的工厂
         var obj = cClass.newInstance()
         if (obj == null) {
-            App.getInstance().LogMs!!.e(TAG, "未找到相应类${classname}，无法实例化")
+            App.getInstance().LogMs?.e(TAG, "未找到相应类${classname}，无法实例化")
             throw  Exception("未找到相应类${classname}，无法实例化")
         }
         var factory = obj as FactoryImpl//实例化工厂

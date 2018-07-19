@@ -12,11 +12,17 @@ class App : Application() {
         }
     }
 
+    private var _log: LogMsImpl? = null
     var LogMs: LogMsImpl? = null
+        get() {
+            return _log
+        }
+
     override fun onCreate() {
         super.onCreate()
         mApp = this
-        LogMs = LoggerFactory.CreateLogger(this.applicationContext)
+        _log = LoggerFactory.createLogger(this.applicationContext)
+        _log?.i("APP", "Application.onCreate()", null)
     }
 
 
