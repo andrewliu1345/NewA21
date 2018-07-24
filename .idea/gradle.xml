@@ -11,15 +11,19 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/basksplint" />
             <option value="$PROJECT_DIR$/basksplintfactory" />
+            <option value="$PROJECT_DIR$/btfactory" />
             <option value="$PROJECT_DIR$/entity" />
             <option value="$PROJECT_DIR$/gpio" />
             <option value="$PROJECT_DIR$/ibasksplint" />
+            <option value="$PROJECT_DIR$/ibt" />
             <option value="$PROJECT_DIR$/ibtcallback" />
             <option value="$PROJECT_DIR$/logs" />
             <option value="$PROJECT_DIR$/printer" />
             <option value="$PROJECT_DIR$/properties" />
             <option value="$PROJECT_DIR$/serialport" />
+            <option value="$PROJECT_DIR$/serialportbt" />
             <option value="$PROJECT_DIR$/server" />
+            <option value="$PROJECT_DIR$/socketbt" />
             <option value="$PROJECT_DIR$/utility" />
           </set>
         </option>
