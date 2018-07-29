@@ -1,8 +1,8 @@
 package com.joesmate.entity
 
 import android.app.Application
-import com.jostmate.logs.LogMsImpl
-import com.jostmate.logs.LoggerFactory
+import com.joesmate.logs.LogMsImpl
+import com.joesmate.logs.LoggerFactory
 
 class App : Application() {
     companion object {

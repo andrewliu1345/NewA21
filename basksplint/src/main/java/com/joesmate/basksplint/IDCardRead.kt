@@ -11,6 +11,7 @@ class IDCardRead : BaseBaskSplint {
         var tag: Int = m_Cmd[1].toInt()
         when (tag) {
             1 -> {
+
                 readIDCard(buffer)
             }
             2 -> {

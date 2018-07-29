@@ -15,6 +15,7 @@ fun String.toHexByteArray(): ByteArray? {
     return buffer
 }
 
+
 private fun charToByte(c: Char): Byte {
 
     return "0123456789ABCDEF".indexOf(c).toByte()

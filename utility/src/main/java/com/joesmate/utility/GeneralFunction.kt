@@ -2,7 +2,6 @@ package com.joesmate.utility
 
 import android.util.Log
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.util.zip.Deflater
 
 /**
@@ -34,7 +33,7 @@ object GeneralFunction {
         return bos.toByteArray()
     }
 
-    fun Dalpey(time: Long) {
+    fun dalpey(time: Long) {
         try {
             Thread.sleep(time)
         } catch (ex: Exception) {
