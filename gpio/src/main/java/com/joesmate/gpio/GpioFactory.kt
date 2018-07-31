@@ -18,4 +18,9 @@ object GpioFactory {
     fun createFinanciaModWorkStateGpio(): BaseGpio {
         return FinanciaModWorkStateGpio()
     }
+
+    fun createRs232Gpio(): BaseGpio {
+        return RS232Gpio()
+    }
+
 }
