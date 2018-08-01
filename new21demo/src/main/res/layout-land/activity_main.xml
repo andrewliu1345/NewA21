@@ -20,6 +20,7 @@
         android:layout_marginTop="8dp"
         android:singleLine="false"
         android:scrollbars="vertical"
+        android:fadeScrollbars="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -58,6 +59,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
+        android:onClick="getNfc"
         android:text="非接卡信息"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -81,6 +83,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
+        android:onClick="openKey"
         android:text="打开键盘"
         app:layout_constraintEnd_toStartOf="@+id/btnKBOff"
         app:layout_constraintTop_toBottomOf="@+id/btnICCard"/>
@@ -92,6 +95,7 @@
         android:layout_marginEnd="11dp"
         android:layout_marginRight="11dp"
         android:layout_marginTop="8dp"
+        android:onClick="closeKey"
         android:text="关闭键盘"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnnfc"/>
@@ -111,9 +115,8 @@
         android:id="@+id/txtSnr"
         android:layout_width="133dp"
         android:layout_height="39dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:ems="10"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -123,7 +126,6 @@
         android:id="@+id/btnSetSnr"
         android:layout_width="39dp"
         android:layout_height="42dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:onClick="setSnr"
@@ -135,9 +137,8 @@
         android:id="@+id/button3"
         android:layout_width="35dp"
         android:layout_height="43dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginRight="28dp"
         android:onClick="getSnr"
         android:text="读"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -146,10 +147,8 @@
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
         android:text="序列号："
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/txtSnr"/>
@@ -177,5 +176,16 @@
         android:text="切换232"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnBeep"/>
+
+    <Button
+        android:id="@+id/btnClear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:onClick="clearScreen"
+        android:text="清空"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSwitchRs232"/>
 
 </android.support.constraint.ConstraintLayout>

@@ -5,21 +5,29 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import com.joesmate.entity.App
-import com.joesmate.gpio.FinanciaModGpio
 import com.joesmate.gpio.GpioFactory
 import com.joesmate.utility.DataDispose
 import kotlinx.android.synthetic.main.activity_main.*
-import vpos.apipackage.Fingerprint
-import vpos.apipackage.IDCard
-import vpos.apipackage.Icc
-import vpos.apipackage.Sys
 
 import java.util.*
-import vpos.apipackage.Mcr
 import com.joesmate.utility.toHexString
+import vpos.apipackage.*
+import android.R.attr.tag
+import vpos.util.ByteUtil
+import vpos.apipackage.APDU_RESP
+import vpos.apipackage.Icc
+import vpos.apipackage.APDU_SEND
+import vpos.apipackage.Picc
 
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        var isRs232 = false
+        var isQuit = false
+        var bt = GpioFactory.createBtGpio()
+        var financiaModGpio = GpioFactory.createFinanciaModGpio()
+        var RS232Gpio = GpioFactory.createRs232Gpio()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +36,7 @@ class MainActivity : AppCompatActivity() {
         getInfo()
     }
 
-    var bt = GpioFactory.createBtGpio()
-    var financiaModGpio = GpioFactory.createFinanciaModGpio()
-    var RS232Gpio = GpioFactory.createRs232Gpio()
+
     //var financiaModWorkStateGpio = GpioFactory.createFinanciaModWorkStateGpio()
     fun iniDevice() {
         object : AsyncTask<Void, String, Void>() {
@@ -38,11 +44,12 @@ class MainActivity : AppCompatActivity() {
                 bt?.onPower()
                 financiaModGpio?.onPower()
                 RS232Gpio.offPower()//断开rs232 切换到金融
-                Thread.sleep(1000)
+                isRs232 = false
+                Thread.sleep(2000)
                 var iRet = Sys.Lib_PowerOn()
 
                 publishProgress("Sys.Lib_PowerOn iRet=$iRet \n")
-
+                Thread.sleep(1000)
                 App.getInstance().LogMs!!.i("MainActivity", "上电 iRet=$iRet")
                 iRet = Sys.Lib_Beep()
 
@@ -67,16 +74,16 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: Void?) {
-                txtInfo.append("完成初始.....")
+                txtInfo.append("完成初始.....\n")
                 super.onPostExecute(result)
 
             }
 
             override fun onProgressUpdate(vararg values: String?) {
-                txtInfo.append(values.toString())
+                txtInfo.append(values[0])
                 super.onProgressUpdate(*values)
             }
-        }
+        }.execute()
 
     }
 
@@ -99,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
                 while (true) {
                     if (System.currentTimeMillis() - startTime > 10000) {
-
+                        IDCard.Lib_IDCardClose()
                         return ByteArray(1)
                     }
 
@@ -153,25 +160,81 @@ class MainActivity : AppCompatActivity() {
                 super.onPostExecute(result)
             }
         }.execute()
-
-
     }
 
     fun getICCard(v: View) {//IC卡操做
-        var isOk = false
-        for (i in 0..3) {//通道号
-            for (j in 1..3) {//电压
-                var atr = ByteArray(33)
-                var iRet = Icc.Lib_IccOpen(i.toByte(), j.toByte(), atr)
-                if (iRet == 0) {
-                    txtInfo.append("卡上电成功 \n")
-                    isOk = true
-                    break
-                } else {
-                    Icc.Lib_IccClose(i.toByte())
-                }
+        object : AsyncTask<Void, String, String>() {
+            override fun onPreExecute() {
+                txtInfo.text = ""
+                txtInfo.append("请刷IC卡 \n")
+                super.onPreExecute()
             }
-        }
+
+            override fun doInBackground(vararg params: Void?): String {
+                var isOk = false
+                for (i in 0..3) {//通道号
+                    var iRet = Icc.Lib_IccCheck(i.toByte())
+                    if (iRet == 0) {
+                        publishProgress("正在读卡....\n")
+                        for (j in 1..3) {//电压
+                            var ATR = ByteArray(40)
+                            iRet = Icc.Lib_IccOpen(i.toByte(), j.toByte(), ATR)
+                            if (iRet == 0) {
+                                val cmd = ByteArray(4)
+                                cmd[0] = 0x00            //0-3 cmd
+                                cmd[1] = 0xa4.toByte()
+                                cmd[2] = 0x04
+                                cmd[3] = 0x00
+                                val lc: Short = 0x0e
+                                val le: Short = 256
+
+                                val sendmsg = "1PAY.SYS.DDF01"
+                                var dataIn = sendmsg.toByteArray()
+
+                                val ApduSend = APDU_SEND(cmd, lc, dataIn, le)
+                                var ApduResp: APDU_RESP? = null
+                                val resp = ByteArray(516)
+
+                                iRet = Icc.Lib_IccCommand(i.toByte(), ApduSend.bytes, resp)
+                                if (0 == iRet) {
+                                    ApduResp = APDU_RESP(resp)
+                                    var strInfo = "读卡成功： ${ByteUtil.bytearrayToHexString(ApduResp.DataOut, ApduResp.LenOut.toInt())}\n" +
+                                            " SWA:${ByteUtil.byteToHexString(ApduResp.SWA)} \n" +
+                                            "SWB:${ByteUtil.byteToHexString(ApduResp.SWB)}"
+
+                                    Icc.Lib_IccClose(i.toByte())
+                                    return strInfo
+                                } else {
+                                    Icc.Lib_IccClose(i.toByte())
+                                    return "APDU 发送失败 \n"
+                                }
+                            } else {
+                                Icc.Lib_IccClose(i.toByte())
+                            }
+
+
+                        }
+                        break
+                    } else {
+                        Icc.Lib_IccClose(i.toByte())
+                    }
+
+                }
+                return "读卡失败 \n"
+            }
+
+            override fun onProgressUpdate(vararg values: String?) {
+                txtInfo.append(values[0])
+                super.onProgressUpdate(*values)
+            }
+
+            override fun onPostExecute(result: String?) {
+                txtInfo.append(result)
+                super.onPostExecute(result)
+            }
+
+        }.execute()
+
 
     }
 
@@ -220,7 +283,14 @@ class MainActivity : AppCompatActivity() {
                 return sReturn
             }
 
+            override fun onPreExecute() {
+                txtInfo.text = ""
+                txtInfo.append("请刷磁条卡 \n")
+                super.onPreExecute()
+            }
+
             override fun onPostExecute(result: String?) {
+                txtInfo.append(result)
                 super.onPostExecute(result)
             }
         }.execute()
@@ -304,6 +374,11 @@ class MainActivity : AppCompatActivity() {
                 return sTxt
             }
 
+            override fun onPostExecute(result: String?) {
+                txtInfo.append(result)
+                super.onPostExecute(result)
+            }
+
             override fun onProgressUpdate(vararg values: String?) {
                 txtInfo.append(values.toString())
                 super.onProgressUpdate(*values)
@@ -313,10 +388,155 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
     fun switchRs232(v: View) {
-        RS232Gpio.onPower()
-        financiaModGpio?.offPower()
-        Thread.sleep(1000)
-        financiaModGpio?.onPower()
+        if (!isRs232) {
+            RS232Gpio.onPower()
+            isRs232 = true
+            financiaModGpio?.offPower()
+            Thread.sleep(1000)
+            financiaModGpio?.onPower()
+            txtInfo.append("Rs232模式 \n")
+        } else {
+            RS232Gpio.offPower()
+            isRs232 = false
+            financiaModGpio?.offPower()
+            Thread.sleep(1000)
+            financiaModGpio?.onPower()
+            txtInfo.append("金融模块模式 \n")
+        }
+    }
+
+
+    fun openKey(v: View) {
+        isQuit = false
+        object : AsyncTask<Void, String, Void>() {
+            override fun doInBackground(vararg params: Void?): Void? {
+                var ret = Key.Lib_KbFlush()
+
+                while (isQuit === false) {
+                    if (Key.Lib_KbCheck() === 0) {
+                        ret = Key.Lib_KbGetKey()
+
+                        if (ret === 28) {//取消
+                            break
+                        } else {
+                            publishProgress("按下 ${KeyValue2String(ret)}\n")
+                        }
+                    } else {
+                        Thread.sleep(300)
+                    }
+                }
+                return null
+            }
+
+            override fun onPreExecute() {
+                txtInfo.setText("请按数字键盘 \n")
+                super.onPreExecute()
+            }
+
+            override fun onProgressUpdate(vararg values: String?) {
+                txtInfo.setText(values[0])
+                super.onProgressUpdate(*values)
+            }
+
+            override fun onPostExecute(result: Void?) {
+                txtInfo.setText("已结束")
+                super.onPostExecute(result)
+            }
+        }.execute()
+    }
+
+    fun closeKey(v: View) {
+        isQuit = true
+    }
+
+    fun KeyValue2String(keyValue: Int): String {
+        var string = ""
+
+        when (keyValue) {
+            48 -> string = "Key0"
+            49 -> string = "Key1"
+            50 -> string = "Key2"
+            51 -> string = "Key3"
+            52 -> string = "Key4"
+            53 -> string = "Key5"
+            54 -> string = "Key6"
+            55 -> string = "Key7"
+            56 -> string = "Key8"
+            57 -> string = "Key9"
+            13 -> string = "Enter"
+            27 -> string = "CancelClear"
+            28 -> string = "Clear"
+        }
+        return string
+    }
+
+    fun clearScreen(v: View) {
+        txtInfo.setText("")
+    }
+
+    fun getNfc(v: View) {
+        object : AsyncTask<Void, String, String>() {
+            override fun onPreExecute() {
+                txtInfo.text = ""
+                txtInfo.append("请放卡 \n")
+                super.onPreExecute()
+            }
+
+            override fun doInBackground(vararg params: Void?): String {
+                var ret = Picc.Lib_PiccOpen()
+                if (0 != ret) {
+                    Picc.Lib_PiccClose()
+                    return "射频打开失败 \n"
+                }
+                var cardtype = ByteArray(3)
+                var serialNo = ByteArray(50)
+                var pwd = ByteArray(20)
+                ret = Picc.Lib_PiccCheck('A'.toByte(), cardtype, serialNo)
+                if (0 == ret) {
+                    publishProgress("找到卡...\n")
+                    val cmd = ByteArray(4)
+                    cmd[0] = 0x00            //0-3 cmd
+                    cmd[1] = 0xa4.toByte()
+                    cmd[2] = 0x04
+                    cmd[3] = 0x00
+                    val lc: Short = 0x0e
+                    val le: Short = 256
+                    var dataIn = "1PAY.SYS.DDF01".toByteArray()
+
+                    val ApduSend = APDU_SEND(cmd, lc, dataIn, le)
+                    var ApduResp: APDU_RESP? = null
+                    val resp = ByteArray(516)
+
+                    ret = Picc.Lib_PiccCommand(ApduSend.bytes, resp)
+
+                    if (0 == ret) {
+                        ApduResp = APDU_RESP(resp)
+                        var strInfo = "${ByteUtil.bytearrayToHexString(ApduResp.DataOut, ApduResp.LenOut.toInt())}\n" +
+                                "SWA:${ByteUtil.byteToHexString(ApduResp.SWA)} \n" +
+                                "SWB:${ByteUtil.byteToHexString(ApduResp.SWB)}"
+                        Picc.Lib_PiccClose()
+                        return strInfo
+
+                    } else {
+                        Picc.Lib_PiccClose()
+                        return "APUD失败"
+                    }
+                }
+                return "没放卡"
+            }
+
+            override fun onProgressUpdate(vararg values: String?) {
+                txtInfo.append(values[0])
+                super.onProgressUpdate(*values)
+            }
+
+            override fun onPostExecute(result: String?) {
+                txtInfo.append(result)
+                super.onPostExecute(result)
+            }
+
+        }.execute()
     }
 }
