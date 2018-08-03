@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         var isQuit = false
         var bt = GpioFactory.createBtGpio()
         var financiaModGpio = GpioFactory.createFinanciaModGpio()
+        var financiaModWorkStateGpio = GpioFactory.createFinanciaModWorkStateGpio()
         var RS232Gpio = GpioFactory.createRs232Gpio()
     }
 
@@ -61,7 +62,7 @@ class MainActivity : AppCompatActivity() {
                 publishProgress("Sys.Lib_GetVersion iRet=$iRet \n")
                 iRet = Sys.Lib_ReadSN(snr)
                 publishProgress("Sys.Lib_ReadSN iRet=$iRet \n")
-                var sVer = ""
+
                 publishProgress("Ver:")
                 for (v in ver) {
                     publishProgress("$v")
@@ -95,8 +96,8 @@ class MainActivity : AppCompatActivity() {
         object : AsyncTask<Void, Void, ByteArray>() {
             override fun doInBackground(vararg params: Void?): ByteArray {
                 var buffer = ByteArray(2321)
-                var iRet = -1
                 IDCard.Lib_IDCardOpen()
+                var iRet = -1
 //                if (iRet != 0) {
 //
 //                    return ByteArray(0)
@@ -327,9 +328,10 @@ class MainActivity : AppCompatActivity() {
                 var sTxt = ""
                 var iRet = Fingerprint.Lib_FpOpen()
                 if (iRet == 0) {
+
                     sTxt = "指纹上电成功 \n"
                     publishProgress(sTxt)
-
+                    Thread.sleep(2000)
                 } else {
                     sTxt = "指纹上电失败 iRet=$iRet \n"
                     Fingerprint.Lib_FpClose()
@@ -346,25 +348,23 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 var buffer = ByteArray(1024)
-                var len = intArrayOf(0, 0, 0, 0)
+                var len = intArrayOf(1024, 0, 0, 0)
 
-                val writeBuf = ByteArray(12)
-                val temp = ByteArray(10)
+                val writeBuf = ByteArray(9)
+                val temp = ByteArray(7)
                 writeBuf[0] = 126
                 writeBuf[1] = 66
-                writeBuf[2] = -128
+                writeBuf[2] = 100
                 writeBuf[3] = 0
                 writeBuf[4] = 0
                 writeBuf[5] = 0
-                writeBuf[6] = 4
-                writeBuf[7] = 0
-                writeBuf[8] = 0
-                writeBuf[9] = 1
-                writeBuf[10] = 0
-                System.arraycopy(writeBuf, 1, temp, 0, 10)
-                writeBuf[11] = DataDispose.getCrc(temp)
-
-                iRet = Fingerprint.Lib_FpCommunication(writeBuf, writeBuf.size, buffer, len, 10)
+                writeBuf[6] = 1
+                writeBuf[7] = 2
+                System.arraycopy(writeBuf, 1, temp, 0, 7)
+                writeBuf[8] = DataDispose.getCrc(temp)
+                //val writeBuf = byteArrayOf(0x7e, 0x53, 0x36, 0x34, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x31, 0x30, 0x32, 0x33, 0x34)
+                publishProgress("请按指纹 \n")
+                iRet = Fingerprint.Lib_FpCommunication(writeBuf, writeBuf.size, buffer, len, 3000)//4000ms以内
                 if (iRet == 0) {
                     sTxt = "获取指纹成功：${buffer.toHexString(len[0])}"
                 } else {
@@ -374,13 +374,19 @@ class MainActivity : AppCompatActivity() {
                 return sTxt
             }
 
+            override fun onPreExecute() {
+                txtInfo.text = ""
+
+                super.onPreExecute()
+            }
+
             override fun onPostExecute(result: String?) {
                 txtInfo.append(result)
                 super.onPostExecute(result)
             }
 
             override fun onProgressUpdate(vararg values: String?) {
-                txtInfo.append(values.toString())
+                txtInfo.append(values[0])
                 super.onProgressUpdate(*values)
             }
         }.execute()
@@ -393,16 +399,12 @@ class MainActivity : AppCompatActivity() {
         if (!isRs232) {
             RS232Gpio.onPower()
             isRs232 = true
-            financiaModGpio?.offPower()
-            Thread.sleep(1000)
-            financiaModGpio?.onPower()
+
             txtInfo.append("Rs232模式 \n")
         } else {
             RS232Gpio.offPower()
             isRs232 = false
-            financiaModGpio?.offPower()
-            Thread.sleep(1000)
-            financiaModGpio?.onPower()
+
             txtInfo.append("金融模块模式 \n")
         }
     }
@@ -486,6 +488,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun doInBackground(vararg params: Void?): String {
                 var ret = Picc.Lib_PiccOpen()
+
                 if (0 != ret) {
                     Picc.Lib_PiccClose()
                     return "射频打开失败 \n"
@@ -539,4 +542,46 @@ class MainActivity : AppCompatActivity() {
 
         }.execute()
     }
+
+    var isAwaken = true
+    fun setWackup(v: View) {
+        if (isAwaken) {
+            Sys.Lib_PosSleep()//  .offPower()//休眠
+            txtInfo.append("金融模块已休眠 \n")
+            isAwaken = false
+        } else {
+            financiaModWorkStateGpio.onPower()//唤醒
+            txtInfo.append("金融模块已唤醒 \n")
+            isAwaken = true
+        }
+    }
+
+    fun setRestart(v: View) {
+        object : AsyncTask<Void, String, String>() {
+            override fun doInBackground(vararg params: Void?): String {
+                financiaModGpio?.offPower()
+                Thread.sleep(1000)
+                financiaModGpio?.onPower()
+                return "金融模块重启成功 \n"
+            }
+
+            override fun onPreExecute() {
+                txtInfo.append("金融模块正在重启 \n")
+                super.onPreExecute()
+            }
+
+            override fun onPostExecute(result: String?) {
+                txtInfo.append(result)
+                super.onPostExecute(result)
+            }
+
+            override fun onProgressUpdate(vararg values: String?) {
+                super.onProgressUpdate(*values)
+            }
+
+        }.execute()
+
+
+    }
+
 }
