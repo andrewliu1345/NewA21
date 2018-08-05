@@ -20,6 +20,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildToolsVersion '27.0.3'
 }
 
 dependencies {
@@ -33,4 +34,5 @@ dependencies {
     implementation project(':entity')
     implementation project(':server')
     implementation project(':utility')
+    implementation project(':logs')
 }

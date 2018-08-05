@@ -50,9 +50,9 @@ fun Int.toByteArrary(): ByteArray {
 
 fun ByteArray.toIntH(): Int {
     var sum = 0
-    if (this == null) {
-        return sum
-    }
+//    if (this == null) {
+//        return sum
+//    }
 
     val ilen = this.size
     for (i in 0 until ilen) {

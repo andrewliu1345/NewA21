@@ -1,1 +1,1 @@
-include ':app', ':logs', ':utility', ':properties', ':entity', ':gpio', ':server', ':printer', ':basksplint', ':serialport', ':basksplintfactory', ':ibtcallback', ':ibasksplint', ':btfactory', ':ibt', ':serialportbt', ':socketbt', ':new21demo'
+include ':app', ':logs', ':utility', ':properties', ':entity', ':gpio', ':server', ':printer', ':basksplint', ':serialport', ':basksplintfactory', ':ibtcallback', ':ibasksplint', ':btfactory', ':ibt', ':serialportbt', ':socketbt', ':new21demo', ':uiimple'

@@ -25,6 +25,7 @@
             <option value="$PROJECT_DIR$/serialportbt" />
             <option value="$PROJECT_DIR$/server" />
             <option value="$PROJECT_DIR$/socketbt" />
+            <option value="$PROJECT_DIR$/uiimple" />
             <option value="$PROJECT_DIR$/utility" />
           </set>
         </option>

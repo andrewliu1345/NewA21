@@ -1,6 +1,7 @@
 package com.josemate.serialportbt
 
 import android.content.Context
+import com.joesmate.gpio.GpioFactory
 import com.joesmate.utility.GeneralFunction
 import com.josemate.ibt.BaseBT
 import com.jostmate.libserialport.LibSerialPort
@@ -27,8 +28,9 @@ class SerialPortBT(private var mContext: Context?) : BaseBT {
 
     }
 
-
+    var bt = GpioFactory.createBtGpio()
     private fun iniConfig() {
+        bt.onPower()
         val properties = Properties()
         val _in = mContext!!.assets.open("Bt.config")//读取配置文件
         properties.load(_in)

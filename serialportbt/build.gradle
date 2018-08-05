@@ -35,6 +35,7 @@ dependencies {
     implementation project(':serialport')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation project(':utility')
+    implementation project(':gpio')
 }
 repositories {
     mavenCentral()

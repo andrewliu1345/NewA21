@@ -1,6 +1,6 @@
 package com.joesmate.gpio
 
-import com.example.wwzl.libserialport.DevctrlJni
+import com.joesmate.gpio.jni.DevctrlJni
 
 /**
  * @author andrewliu

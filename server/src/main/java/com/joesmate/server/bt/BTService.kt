@@ -24,5 +24,6 @@ class BTService : Service() {
         super.onCreate()
         mLog?.i("BTService", "服务启动")
         mbt = BtFactory.CreateBT(this.applicationContext)
+        mbt?.openBt()
     }
 }

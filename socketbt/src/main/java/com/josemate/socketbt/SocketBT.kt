@@ -5,10 +5,13 @@ import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.util.Log
+import com.joesmate.gpio.GpioFactory
 import com.josemate.ibt.BaseBT
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.*
+
 
 /**
  * @author andrewliu
@@ -24,8 +27,9 @@ constructor(private var mContext: Context?) : BaseBT {
         // iniBtServerSocket();
     }
 
-
+    var bt = GpioFactory.createBtGpio()
     private fun iniBtAdapter() {
+        bt?.offPower()
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (mBluetoothAdapter == null) {
             throw Exception("蓝牙未找到")
@@ -89,15 +93,15 @@ constructor(private var mContext: Context?) : BaseBT {
 
     override fun readBt(inputBuff: ByteArray): Int {
         var iRet = -1
-        if (!mConneted || mServerSocket == null || mSocket == null || !mSocket!!.isConnected || `in` == null)
+        if (!mConneted || mServerSocket == null || mSocket == null || !mSocket!!.isConnected || ins == null)
         //未连接
             return iRet
 
         try {
-            iRet = `in`!!.read(inputBuff)
+            iRet = ins!!.read(inputBuff)
         } catch (ex: IOException) {
-            `in`!!.close()
-            out!!.close()
+            ins!!.close()
+            outs!!.close()
             mSocket!!.close()
             mConneted = false
             throw ex
@@ -108,8 +112,8 @@ constructor(private var mContext: Context?) : BaseBT {
 
 
     override fun writeBt(outputBuff: ByteArray, length: Int): Int {
-        out!!.flush()
-        out!!.write(outputBuff, 0, length)
+        outs!!.flush()
+        outs!!.write(outputBuff, 0, length)
         return length
     }
 
@@ -140,9 +144,10 @@ constructor(private var mContext: Context?) : BaseBT {
                     }
                     mSocket = mServerSocket!!.accept()
                     if (mSocket!!.isConnected) {
-                        `in` = mSocket!!.inputStream
-                        out = mSocket!!.outputStream
+                        ins = mSocket!!.inputStream
+                        outs = mSocket!!.outputStream
                         mConneted = true
+                        //ReadAndWriteTestTheard.start()
                     }
 
                 } catch (ex: Exception) {
@@ -162,13 +167,14 @@ constructor(private var mContext: Context?) : BaseBT {
     }
 
     companion object {
-        val PROTOCOL_SCHEME_L2CAP = "btl2cap"
-        val PROTOCOL_SCHEME_RFCOMM = "btspp"
-        val PROTOCOL_SCHEME_BT_OBEX = "btgoep"
-        val PROTOCOL_SCHEME_TCP_OBEX = "tcpobex"
-        var mServerThread: ServerThread? = null
-        var `in`: InputStream? = null
-        var out: OutputStream? = null
+        //        val PROTOCOL_SCHEME_L2CAP = "btl2cap"
+//        val PROTOCOL_SCHEME_RFCOMM = "btspp"
+//        val PROTOCOL_SCHEME_BT_OBEX = "btgoep"
+//        val PROTOCOL_SCHEME_TCP_OBEX = "tcpobex"
+        private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+        private var mServerThread: ServerThread? = null
+        private var ins: InputStream? = null
+        private var outs: OutputStream? = null
         private var mConneted = false
         private var mClosed = true
         private var mServerSocket: BluetoothServerSocket? = null//蓝牙服务端socket
@@ -181,8 +187,10 @@ constructor(private var mContext: Context?) : BaseBT {
 
 
             try {
-                val listenMethod = mBluetoothAdapter!!.javaClass.getMethod("listenUsingRfcommOn", Int::class.java)
-                mServerSocket = listenMethod.invoke(mBluetoothAdapter, 29) as BluetoothServerSocket
+                setScanMode(mBluetoothAdapter!!, 0)//让蓝牙永久可被搜索
+                mServerSocket = mBluetoothAdapter?.listenUsingRfcommWithServiceRecord("A21 SPP", MY_UUID)
+//                val listenMethod = mBluetoothAdapter!!.javaClass.getMethod("listenUsingRfcommOn", Int::class.java)
+//                mServerSocket = listenMethod.invoke(mBluetoothAdapter, 29) as BluetoothServerSocket
             } catch (e: SecurityException) {
 
                 // TODO Auto-generated catch block
@@ -218,7 +226,30 @@ constructor(private var mContext: Context?) : BaseBT {
             //        }
 
         }
+
+        fun setScanMode(adapter: BluetoothAdapter, timeout: Int) {
+            val setDiscoverableTimeout = BluetoothAdapter::class.java.getMethod("setDiscoverableTimeout", Int::class.javaPrimitiveType)
+            setDiscoverableTimeout.isAccessible = true
+            val setScanMode = BluetoothAdapter::class.java.getMethod("setScanMode", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+            setScanMode.isAccessible = true
+
+            setDiscoverableTimeout.invoke(adapter, timeout)
+            setScanMode.invoke(adapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, timeout)
+        }
     }
 
 
+//    var ReadAndWriteTestTheard = object : Thread() {
+//        override fun run() {
+//            while (true) {
+//                var buffer = ByteArray(4096)
+//                var iRet = readBt(buffer)
+//                if (iRet > 0) {
+//                    var s = "A21收到数据".toByteArray(Charsets.UTF_8)
+//                    iRet = writeBt(s, s.size)
+//                }
+//                super.run()
+//            }
+//        }
+//    }
 }

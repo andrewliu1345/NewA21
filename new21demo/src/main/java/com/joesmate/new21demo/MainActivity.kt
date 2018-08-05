@@ -12,7 +12,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import com.joesmate.utility.toHexString
 import vpos.apipackage.*
-import android.R.attr.tag
 import vpos.util.ByteUtil
 import vpos.apipackage.APDU_RESP
 import vpos.apipackage.Icc
@@ -30,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         var RS232Gpio = GpioFactory.createRs232Gpio()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    open override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         iniDevice()
@@ -42,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     fun iniDevice() {
         object : AsyncTask<Void, String, Void>() {
             override fun doInBackground(vararg params: Void?): Void? {
-                bt?.onPower()
+                bt?.offPower()
                 financiaModGpio?.onPower()
                 RS232Gpio.offPower()//断开rs232 切换到金融
                 isRs232 = false
@@ -331,7 +330,7 @@ class MainActivity : AppCompatActivity() {
 
                     sTxt = "指纹上电成功 \n"
                     publishProgress(sTxt)
-                    Thread.sleep(2000)
+                    Thread.sleep(1000)
                 } else {
                     sTxt = "指纹上电失败 iRet=$iRet \n"
                     Fingerprint.Lib_FpClose()

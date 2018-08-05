@@ -56,13 +56,13 @@ class LogForFlieDecorator(logger: LogMsImpl) : BaseLoggerDecorator(logger) {
         synchronized(LogForFlieDecorator::class.java) {
             val sdcardPath = Environment.getExternalStorageDirectory().absolutePath
             val dirPath = "$sdcardPath/LogMg/"
-            var file: File? = null
+            //var file: File? = null
             var randomAccessFile: RandomAccessFile? = null
 
             val sFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             content = String.format("${sFormat.format(Date(System.currentTimeMillis()))}   ${content}")
             try {
-                file = File(dirPath)
+                var file = File(dirPath)
                 if (!file.exists()) {
                     file.mkdir()
                 }
