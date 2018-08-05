@@ -14,7 +14,9 @@ import android.view.View
  * @Describe
  */
 class GestureVolume : View {
-    val FLIP_DISTANCE = 130
+    private val verticalMinistance = 100            //水平最小识别距离
+    private val minVelocity = 10            //最小识别速度
+
     var mAudioManager: AudioManager? = null
 
     constructor(context: Context) : super(context)
@@ -46,20 +48,19 @@ class GestureVolume : View {
         }
 
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            if (e1!!.getX() - e2!!.getX() > FLIP_DISTANCE) {//向左滑
 
-                return true
-            }
-            if (e2!!.getX() - e1!!.getX() > FLIP_DISTANCE) {//向右滑
+//            var v = e1!!.getY() - e2!!.getY()//垂直
+//            var h = e1!!.getX() - e2!!.getX()//水平
 
-                return true
-            }
-            if (e1!!.getY() - e2!!.getY() > FLIP_DISTANCE) {//向上滑
+            if (e1!!.getX() - e2!!.getX() > verticalMinistance && Math.abs(velocityX) > minVelocity) {//向左滑
+
+            } else if (e2!!.getX() - e1!!.getX() > verticalMinistance && Math.abs(velocityX) > minVelocity) {//向右滑
+
+            } else if (e1!!.getY() - e2!!.getY() > verticalMinistance && Math.abs(velocityY) > minVelocity) {//向上滑
                 mAudioManager!!.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE,
                         AudioManager.FX_FOCUS_NAVIGATION_UP)
                 return true
-            }
-            if (e2!!.getY() - e1!!.getY() > FLIP_DISTANCE) {//向下滑
+            } else if (e2!!.getY() - e1!!.getY() > verticalMinistance && Math.abs(velocityY) > minVelocity) {//向下滑
                 mAudioManager!!.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER,
                         AudioManager.FX_FOCUS_NAVIGATION_UP)
                 return true

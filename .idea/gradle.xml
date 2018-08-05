@@ -27,6 +27,7 @@
             <option value="$PROJECT_DIR$/socketbt" />
             <option value="$PROJECT_DIR$/uiimple" />
             <option value="$PROJECT_DIR$/utility" />
+            <option value="$PROJECT_DIR$/voice" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
