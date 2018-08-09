@@ -1,5 +1,6 @@
 package com.joesmate.new21demo
 
+import android.content.Intent
 import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -27,13 +28,17 @@ class MainActivity : AppCompatActivity() {
         var financiaModGpio = GpioFactory.createFinanciaModGpio()
         var financiaModWorkStateGpio = GpioFactory.createFinanciaModWorkStateGpio()
         var RS232Gpio = GpioFactory.createRs232Gpio()
+        val tts = App.getInstance().TTS
     }
 
     open override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        //var contex=this.applicationContext
+
         iniDevice()
         getInfo()
+        // App.getInstance().TTS!!.doSpeek("欢迎使用")
     }
 
 
@@ -137,6 +142,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPreExecute() {
                 txtInfo.append("开始读卡 \n")
+                tts!!.doSpeek("请放身份证")
             }
 
             override fun onPostExecute(result: ByteArray?) {
@@ -144,18 +150,22 @@ class MainActivity : AppCompatActivity() {
                 //txtInfo.append("身份证打开错误 iRet=$iRet")
                 if (result?.size == 0) {
                     txtInfo.append("身份证打开错误 \n")
+                    tts!!.doSpeek("身份证打开错误")
                 }
                 if (result?.size == 1) {
                     txtInfo.append("身份证读卡超时 \n")
+                    tts!!.doSpeek("身份证读卡超时")
                 }
                 if (result?.size == 2) {
                     txtInfo.append("身份证读卡失败 \n")
+                    tts!!.doSpeek("身份证读卡超时")
                 }
                 if (result?.size as Int > 14) {
                     var bname = ByteArray(30)
                     System.arraycopy(result, 0, bname, 0, 30)
                     var sname = bname.toString(Charsets.UTF_16LE)
                     txtInfo.append("读卡成功 name=$sname \n")
+                    tts!!.doSpeek("读卡成功")
                 }
                 super.onPostExecute(result)
             }
@@ -167,6 +177,7 @@ class MainActivity : AppCompatActivity() {
             override fun onPreExecute() {
                 txtInfo.text = ""
                 txtInfo.append("请刷IC卡 \n")
+                tts!!.doSpeek("请刷IC卡")
                 super.onPreExecute()
             }
 
@@ -225,11 +236,13 @@ class MainActivity : AppCompatActivity() {
 
             override fun onProgressUpdate(vararg values: String?) {
                 txtInfo.append(values[0])
+                tts!!.doSpeek(values[0])
                 super.onProgressUpdate(*values)
             }
 
             override fun onPostExecute(result: String?) {
                 txtInfo.append(result)
+                tts!!.doSpeek(result)
                 super.onPostExecute(result)
             }
 
@@ -286,17 +299,20 @@ class MainActivity : AppCompatActivity() {
             override fun onPreExecute() {
                 txtInfo.text = ""
                 txtInfo.append("请刷磁条卡 \n")
+                tts!!.doSpeek("请刷磁条卡")
                 super.onPreExecute()
             }
 
             override fun onPostExecute(result: String?) {
                 txtInfo.append(result)
+                // tts!!.doSpeek(result)
                 super.onPostExecute(result)
             }
         }.execute()
     }
 
     fun doBeep(v: View) {
+        tts!!.doSpeek("您好~~")
         Sys.Lib_Beep()
     }
 
@@ -330,7 +346,7 @@ class MainActivity : AppCompatActivity() {
 
                     sTxt = "指纹上电成功 \n"
                     publishProgress(sTxt)
-                    Thread.sleep(1000)
+
                 } else {
                     sTxt = "指纹上电失败 iRet=$iRet \n"
                     Fingerprint.Lib_FpClose()
@@ -345,7 +361,7 @@ class MainActivity : AppCompatActivity() {
                     Fingerprint.Lib_FpClose()
                     return sTxt
                 }
-
+                Thread.sleep(200)
                 var buffer = ByteArray(1024)
                 var len = intArrayOf(1024, 0, 0, 0)
 
@@ -375,7 +391,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPreExecute() {
                 txtInfo.text = ""
-
+                tts!!.doSpeek("请按指纹")
                 super.onPreExecute()
             }
 
@@ -583,4 +599,13 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun doSign(v: View) {
+        var intent = Intent(this.applicationContext, SignActivity::class.java)
+        startActivity(intent)
+    }
+
+    fun doPboc(v: View) {
+        var intent = Intent(this.applicationContext, PbocActivity::class.java)
+        startActivity(intent)
+    }
 }

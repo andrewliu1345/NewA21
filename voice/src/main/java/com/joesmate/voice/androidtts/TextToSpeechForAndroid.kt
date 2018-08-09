@@ -3,6 +3,7 @@ package com.joesmate.voice.androidtts
 import android.content.Context
 import android.os.Build
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import com.joesmate.voice.ivoice.BaseVoice
 import java.util.*
 
@@ -12,10 +13,10 @@ import java.util.*
  * @Describe
  */
 class TextToSpeechForAndroid : BaseVoice {
-    internal var m_context: Context
+    internal var m_context: Context?
     private var tts: TextToSpeech? = null
 
-    constructor(context: Context) {
+    constructor(context: Context?) {
         m_context = context
         tts = TextToSpeech(m_context, TTS_InitListener)
     }
@@ -26,11 +27,12 @@ class TextToSpeechForAndroid : BaseVoice {
             val result = tts?.setLanguage(Locale.CHINA)
             //  若不支持所设置的语言
             if (result != TextToSpeech.LANG_AVAILABLE && result != TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+                Log.e("TextToSpeechForAndroid", "不支持所设置的语言")
             }
         }
     }
 
-    override fun doSpeek(text: String) {
+    override fun doSpeek(text: String?) {
         if (Build.VERSION.SDK_INT > 21) {
 
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "speech")
@@ -40,7 +42,7 @@ class TextToSpeechForAndroid : BaseVoice {
         }
     }
 
-    override fun setContext(context: Context) {
+    override fun setContext(context: Context?) {
         m_context = context
     }
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:SignaturePad="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SignActivity">
+
+    <com.joesmate.signaturepad.views.SignaturePad
+        android:id="@+id/signature_pad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        SignaturePad:ToolType="2"
+        SignaturePad:clearOnDoubleClick="true"
+        SignaturePad:maxWidth="40dp"
+        SignaturePad:minWidth="1dp"
+        SignaturePad:velocityFilterWeight="5"/>
+</android.support.constraint.ConstraintLayout>

@@ -104,7 +104,7 @@ constructor(private var mContext: Context?) : BaseBT {
             outs!!.close()
             mSocket!!.close()
             mConneted = false
-            throw ex
+            ex.printStackTrace()
         }
 
         return iRet
@@ -112,9 +112,20 @@ constructor(private var mContext: Context?) : BaseBT {
 
 
     override fun writeBt(outputBuff: ByteArray, length: Int): Int {
-        outs!!.flush()
-        outs!!.write(outputBuff, 0, length)
-        return length
+        var iRet = 0
+        try {
+            outs!!.flush()
+            outs!!.write(outputBuff, 0, length)
+            iRet = length
+        } catch (ex: Exception) {
+            ins!!.close()
+            outs!!.close()
+            mSocket!!.close()
+            mConneted = false
+            ex.printStackTrace()
+        }
+
+        return iRet
     }
 
 

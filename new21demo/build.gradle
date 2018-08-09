@@ -3,21 +3,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 26
-//    splits {
-//
-//        abi {
-//
-//            enable true
-//
-//            reset()
-//
-//            include 'x86', 'arm64-v8a', 'armeabi-v7a', 'x86_64'
-//
-//            universalApk true
-//
-//        }
-//
-//    }
+    signingConfigs {
+        Release {
+            keyAlias 'joesmate'
+            keyPassword 'JoesMate2015'
+            storeFile file('F:/AndrewLiu/Documents/work/joesmate.jks')
+            storePassword 'JoesMate2015'
+        }
+    }
     defaultConfig {
         applicationId "com.joesmate.new21demo"
         minSdkVersion 15
@@ -30,8 +23,17 @@ android {
     }
     buildTypes {
         release {
+//混淆
             minifyEnabled false
+            //Zipalign优化
+            zipAlignEnabled true
+            //去掉不用资源
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.Release
+        }
+        debug {
+            signingConfig signingConfigs.Release
         }
     }
     buildToolsVersion '27.0.3'
@@ -52,4 +54,6 @@ dependencies {
     implementation project(':utility')
     implementation project(':gpio')
     implementation project(':uiimple')
+    implementation project(':voice')
+    implementation files('libs/SignaturePad.jar')
 }

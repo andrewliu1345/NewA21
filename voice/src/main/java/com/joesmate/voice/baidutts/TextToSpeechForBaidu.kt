@@ -16,7 +16,7 @@ import java.io.*
  * @Describe
  */
 class TextToSpeechForBaidu : BaseVoice {
-    internal var m_context: Context
+    internal var m_context: Context?
     private var mSpeechSynthesizer: SpeechSynthesizer? = null
     private var mSampleDirPath: String? = null
 
@@ -32,18 +32,18 @@ class TextToSpeechForBaidu : BaseVoice {
         private val APPID = "9902705"
     }
 
-    constructor(context: Context) {
+    constructor(context: Context?) {
         m_context = context
         initialEnv()
         initialTts()
     }
 
-    override fun doSpeek(text: String) {
+    override fun doSpeek(text: String?) {
         mSpeechSynthesizer?.stop()
         val result = mSpeechSynthesizer?.speak(text)
     }
 
-    override fun setContext(context: Context) {
+    override fun setContext(context: Context?) {
         m_context = context
     }
 
@@ -129,7 +129,7 @@ class TextToSpeechForBaidu : BaseVoice {
             var _is: InputStream? = null
             var fos: FileOutputStream? = null
             try {
-                _is = m_context.resources.assets.open(source)
+                _is = m_context!!.resources.assets.open(source)
                 fos = FileOutputStream(dest)
                 val buffer = ByteArray(1024)
                 var size = 0

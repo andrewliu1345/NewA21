@@ -9,6 +9,7 @@
     tools:context=".MainActivity">
 
     <com.joesmate.uiimple.GestureVolume
+        android:id="@+id/gVolume"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -203,5 +204,23 @@
         android:text="重启模块"
         app:layout_constraintEnd_toStartOf="@+id/btnSwitchRs232"
         app:layout_constraintTop_toBottomOf="@+id/btnFpOn"/>
+
+    <Button
+        android:id="@+id/btnSign"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:onClick="doSign"
+        android:text="签名"
+        app:layout_constraintEnd_toStartOf="@+id/btnRestart"
+        app:layout_constraintTop_toBottomOf="@+id/btnWakup"/>
+
+    <Button
+        android:id="@+id/btnPboc"
+        android:layout_width="87dp"
+        android:layout_height="39dp"
+        android:onClick="doPboc"
+        android:text="PBOC"
+        app:layout_constraintEnd_toStartOf="@+id/btnClear"
+        app:layout_constraintTop_toBottomOf="@+id/btnRestart"/>
 
 </android.support.constraint.ConstraintLayout>

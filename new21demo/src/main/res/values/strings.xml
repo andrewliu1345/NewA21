@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">New 21 Demo</string>
+    <string name="read_record">读交易记录</string>
+    <string name="read_load_record">读圈存记录</string>
+    <string name="get_de55">取55域数据</string>
+    <string name="get_arqc">取ARQC数据</string>
 </resources>

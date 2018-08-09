@@ -10,7 +10,7 @@ import android.content.Context
 interface BaseVoice {
 
 
-    fun doSpeek(string: String)
-    fun setContext(context: Context)
+    fun doSpeek(string: String?)
+    fun setContext(context: Context?)
     fun doClose()
 }

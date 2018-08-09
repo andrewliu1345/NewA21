@@ -7,7 +7,26 @@ import com.joesmate.utility.DataDispose
 import com.joesmate.utility.toIntH
 
 class IDCardRead : BaseBaskSplint {
-    constructor(buffer: ByteArray, listening: BtCallBackListening) : super(buffer, listening) {
+//    constructor(buffer: ByteArray, listening: BtCallBackListening) : super(buffer, listening) {
+//        var tag: Int = m_Cmd[1].toInt()
+//        when (tag) {
+//            1 -> {
+//
+//                readIDCard(buffer)
+//            }
+//            2 -> {
+//                getIDInfo(buffer)
+//            }
+//            else -> {
+//                backErrData(byteArrayOf(0, 1))
+//            }
+//        }
+//    }
+
+    constructor(listening: BtCallBackListening) : super(listening)
+
+    override fun setData(buffer: ByteArray) {
+        super.setData(buffer)
         var tag: Int = m_Cmd[1].toInt()
         when (tag) {
             1 -> {
