@@ -24,6 +24,7 @@ class PbocActivity : AppCompatActivity() {
     }
 
     fun getReadRecord(v: View) {
+        var ReadAsync = Async(2, 15000)
         ReadAsync.execute(object : MyDelegate {
             override fun doReadCard(channel: Byte): Array<String>? {
                 return CoreLogic.GetICCTRXDetails(channel, 0, "15")
@@ -33,6 +34,7 @@ class PbocActivity : AppCompatActivity() {
     }
 
     fun getDe55(v: View) {
+        var ReadAsync = Async(2, 15000)
         ReadAsync.execute(object : MyDelegate {
             override fun doReadCard(channel: Byte): Array<String>? {
                 return CoreLogic.GetICCInfo(channel, "A000000333", "ABCDEFGHIJKL".toUpperCase(), "15");
@@ -42,6 +44,7 @@ class PbocActivity : AppCompatActivity() {
     }
 
     fun getArqc(v: View) {
+        var ReadAsync = Async(2, 15000)
         ReadAsync.execute(object : MyDelegate {
             override fun doReadCard(channel: Byte): Array<String>? {
                 return CoreLogic.GetICCArqc(channel, "P012000000010000Q012000000000000R003156S006111202T00201U006102550V000".toUpperCase(), "A000000333", "15")
@@ -50,6 +53,7 @@ class PbocActivity : AppCompatActivity() {
     }
 
     fun getReadLoadRecord(v: View) {
+        var ReadAsync = Async(2, 15000)
         ReadAsync.execute(object : MyDelegate {
             override fun doReadCard(channel: Byte): Array<String>? {
                 return CoreLogic.GetICCLoadDetails(channel, 0, "A000000333", "15")
@@ -58,9 +62,17 @@ class PbocActivity : AppCompatActivity() {
         })
     }
 
-    var ReadAsync = object : AsyncTask<MyDelegate, String, Array<String>>() {
+    inner class Async : AsyncTask<MyDelegate, String, Array<String>> {
+        var _type = 2
+        var _timeOut = 15000
+
+        constructor(type: Int, timeOut: Int) {
+            _type = type
+            _timeOut = timeOut
+        }
+
         override fun doInBackground(vararg params: MyDelegate?): Array<String>? {
-            var channel = FindCard(2, 15000)
+            var channel = FindCard(_type, _timeOut)
             if (channel == -1) {
                 return null
             }
@@ -84,8 +96,9 @@ class PbocActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: Array<String>?) {
             super.onPostExecute(result)
-            txtInfo.append("读卡成功\n")
+
             if (result != null && result.size > 0) {
+                txtInfo.append("读卡成功\n")
                 for (msg in result) {
                     txtInfo.append(msg)
                 }
@@ -101,7 +114,7 @@ class PbocActivity : AppCompatActivity() {
         val cardtype = ByteArray(1)
         val uid = ByteArray(64)
         var start = System.currentTimeMillis()
-        while (System.currentTimeMillis() - start > timeOut) {
+        while (System.currentTimeMillis() - start < timeOut) {
             when (type) {
                 0 -> {
                     if (FindICCard() == 0)
@@ -133,7 +146,7 @@ class PbocActivity : AppCompatActivity() {
         val lpAtr = ByteArray(128)
         var ret = Icc.Lib_IccCheck(0x00.toByte())
         if (ret == 0) {
-            ret = Icc.Lib_IccOpen(0x00.toByte(), 0x00.toByte(), lpAtr)
+            ret = Icc.Lib_IccOpen(0x00.toByte(), 0x01.toByte(), lpAtr)
 
             if (ret == 0) {
                 Logs!!.i("FindICCard,成功", "$lpAtr")
