@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         var financiaModGpio = GpioFactory.createFinanciaModGpio()
         var financiaModWorkStateGpio = GpioFactory.createFinanciaModWorkStateGpio()
         var RS232Gpio = GpioFactory.createRs232Gpio()
+        var EHandwriteGpio = GpioFactory.createEHandwriteGpio()
         val tts = App.getInstance().TTS
     }
 
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
         object : AsyncTask<Void, String, Void>() {
             override fun doInBackground(vararg params: Void?): Void? {
                 bt?.offPower()
+                EHandwriteGpio?.onPower()
                 financiaModGpio?.onPower()
                 RS232Gpio.offPower()//断开rs232 切换到金融
                 isRs232 = false
@@ -162,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 if (result?.size as Int > 14) {
                     var bname = ByteArray(30)
-                    System.arraycopy(result, 0, bname, 0, 30)
+                    System.arraycopy(result, 9, bname, 0, 30)
                     var sname = bname.toString(Charsets.UTF_16LE)
                     txtInfo.append("读卡成功 name=$sname \n")
                     tts!!.doSpeek("读卡成功")
@@ -600,12 +602,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun doSign(v: View) {
+        tts?.doSpeek("请签名")
+        EHandwriteGpio?.onPower()
         var intent = Intent(this.applicationContext, SignActivity::class.java)
-        startActivity(intent)
+        startActivityForResult(intent, 1)
     }
 
     fun doPboc(v: View) {
         var intent = Intent(this.applicationContext, PbocActivity::class.java)
         startActivity(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            0 -> {
+
+            }
+            1 -> {
+                EHandwriteGpio?.offPower()
+            }
+            2 -> {
+
+            }
+            else -> {
+            }
+        }
     }
 }

@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         SignaturePad:ToolType="2"
         SignaturePad:clearOnDoubleClick="true"
-        SignaturePad:maxWidth="40dp"
-        SignaturePad:minWidth="1dp"
-        SignaturePad:velocityFilterWeight="5"/>
+        SignaturePad:maxWidth="10dp"
+        SignaturePad:minWidth="0.05dp"
+        SignaturePad:velocityFilterWeight="0.3"/>
 </android.support.constraint.ConstraintLayout>

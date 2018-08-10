@@ -23,4 +23,8 @@ object GpioFactory {
         return RS232Gpio()
     }
 
+    fun createEHandwriteGpio(): BaseGpio {
+        return EHandwriteGpio()
+    }
+
 }

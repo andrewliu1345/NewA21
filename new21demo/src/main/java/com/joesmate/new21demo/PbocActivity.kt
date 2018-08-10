@@ -37,7 +37,7 @@ class PbocActivity : AppCompatActivity() {
         var ReadAsync = Async(2, 15000)
         ReadAsync.execute(object : MyDelegate {
             override fun doReadCard(channel: Byte): Array<String>? {
-                return CoreLogic.GetICCInfo(channel, "A000000333", "ABCDEFGHIJKL".toUpperCase(), "15");
+                return CoreLogic.GetICCInfo(channel, "A000000333", "ABCDEFGHIJKL".toUpperCase(), "15")
             }
 
         })
@@ -146,11 +146,13 @@ class PbocActivity : AppCompatActivity() {
         val lpAtr = ByteArray(128)
         var ret = Icc.Lib_IccCheck(0x00.toByte())
         if (ret == 0) {
-            ret = Icc.Lib_IccOpen(0x00.toByte(), 0x01.toByte(), lpAtr)
+            for (i in 3..1) {
+                ret = Icc.Lib_IccOpen(0x00.toByte(), i.toByte(), lpAtr)
 
-            if (ret == 0) {
-                Logs!!.i("FindICCard,成功", "$lpAtr")
-                return 0
+                if (ret == 0) {
+                    Logs!!.i("FindICCard,成功", "$lpAtr")
+                    return 0
+                }
             }
         }
         return -1

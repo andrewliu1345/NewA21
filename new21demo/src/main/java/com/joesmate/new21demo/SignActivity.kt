@@ -11,22 +11,27 @@ class SignActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign)
-      signature_pad.setOnSignedListener(object : SignaturePad.OnSignedListener {
-          override fun onStartSigning() {
-              Toast.makeText(this@SignActivity, "开始签名", Toast.LENGTH_LONG)
-          }
+        signature_pad.setOnSignedListener(object : SignaturePad.OnSignedListener {
+            override fun onStartSigning() {
+                Toast.makeText(this@SignActivity, "开始签名", Toast.LENGTH_LONG)
+            }
 
-          override fun onSigned() {
+            override fun onSigned() {
 
-          }
+            }
 
-          override fun onClear() {
+            override fun onClear() {
 
-          }
+            }
 
-          override fun onGetPaint(x: Float, y: Float, w: Float) {
+            override fun onGetPaint(x: Float, y: Float, w: Float) {
 
-          }
-      })
+            }
+        })
     }
+
+//    override fun onDestroy() {
+//        setResult(1, null)
+//        super.onDestroy()
+//    }
 }
