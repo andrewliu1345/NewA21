@@ -223,4 +223,39 @@
         app:layout_constraintEnd_toStartOf="@+id/btnClear"
         app:layout_constraintTop_toBottomOf="@+id/btnRestart"/>
 
+    <Button
+        android:id="@+id/btnClangeBtName"
+        android:layout_width="59dp"
+        android:layout_height="37dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:onClick="setBtName"
+        android:text="修改"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnClear"/>
+
+    <EditText
+        android:id="@+id/txtBtName"
+        android:layout_width="159dp"
+        android:layout_height="33dp"
+        android:ems="10"
+        android:inputType="none|text"
+        android:text="ZJSA03"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="8sp"
+        android:typeface="normal"
+        app:layout_constraintEnd_toStartOf="@+id/btnClangeBtName"
+        app:layout_constraintTop_toBottomOf="@+id/btnPboc"/>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="52dp"
+        android:text="蓝牙名"
+        app:layout_constraintEnd_toStartOf="@+id/txtBtName"
+        app:layout_constraintTop_toBottomOf="@+id/btnSign"/>
+
 </android.support.constraint.ConstraintLayout>

@@ -5,6 +5,7 @@ import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import com.joesmate.btfactory.BtFactory
 import com.joesmate.entity.App
 import com.joesmate.gpio.GpioFactory
 import com.joesmate.utility.DataDispose
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         object : AsyncTask<Void, String, Void>() {
             override fun doInBackground(vararg params: Void?): Void? {
                 bt?.offPower()
-                EHandwriteGpio?.onPower()
+                EHandwriteGpio?.offPower()
                 financiaModGpio?.onPower()
                 RS232Gpio.offPower()//断开rs232 切换到金融
                 isRs232 = false
@@ -80,8 +81,13 @@ class MainActivity : AppCompatActivity() {
                 return null
             }
 
+            override fun onPreExecute() {
+                tts?.doSpeek("正在初始化")
+            }
+
             override fun onPostExecute(result: Void?) {
                 txtInfo.append("完成初始.....\n")
+                tts?.doSpeek("完成初始")
                 super.onPostExecute(result)
 
             }
@@ -244,7 +250,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPostExecute(result: String?) {
                 txtInfo.append(result)
-                tts!!.doSpeek(result)
+                // tts!!.doSpeek(result)
                 super.onPostExecute(result)
             }
 
@@ -500,6 +506,7 @@ class MainActivity : AppCompatActivity() {
             override fun onPreExecute() {
                 txtInfo.text = ""
                 txtInfo.append("请放卡 \n")
+                tts?.doSpeek("请放卡")
                 super.onPreExecute()
             }
 
@@ -554,6 +561,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPostExecute(result: String?) {
                 txtInfo.append(result)
+                //  tts?.doSpeek(result)
                 super.onPostExecute(result)
             }
 
@@ -628,5 +636,10 @@ class MainActivity : AppCompatActivity() {
             else -> {
             }
         }
+    }
+
+    fun setBtName(v: View) {
+        var bt = BtFactory.CreateBT(this)
+        bt.setName(txtBtName.text.toString())
     }
 }

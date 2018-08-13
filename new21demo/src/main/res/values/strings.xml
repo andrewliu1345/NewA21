@@ -4,4 +4,5 @@
     <string name="read_load_record">读圈存记录</string>
     <string name="get_de55">取55域数据</string>
     <string name="get_arqc">取ARQC数据</string>
+    <string name="title_activity_pin_pad">PinPadActivity</string>
 </resources>

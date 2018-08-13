@@ -144,14 +144,17 @@ class PbocActivity : AppCompatActivity() {
 
     fun FindICCard(): Int {
         val lpAtr = ByteArray(128)
-        var ret = Icc.Lib_IccCheck(0x00.toByte())
-        if (ret == 0) {
-            for (i in 3..1) {
-                ret = Icc.Lib_IccOpen(0x00.toByte(), i.toByte(), lpAtr)
+        for (j in 0..3) {
+            var ret = Icc.Lib_IccCheck(j.toByte())
+            if (ret == 0) {
 
-                if (ret == 0) {
-                    Logs!!.i("FindICCard,成功", "$lpAtr")
-                    return 0
+                for (i in 1..3) {
+                    ret = Icc.Lib_IccOpen(j.toByte(), i.toByte(), lpAtr)
+
+                    if (ret == 0) {
+                        Logs!!.i("FindICCard,成功", "$lpAtr")
+                        return 0
+                    }
                 }
             }
         }

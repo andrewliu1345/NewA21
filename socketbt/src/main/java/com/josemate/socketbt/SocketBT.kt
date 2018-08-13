@@ -20,6 +20,9 @@ import java.util.*
  */
 class SocketBT
 constructor(private var mContext: Context?) : BaseBT {
+    override fun setName(text: String?) {
+        mBluetoothAdapter!!.setName(text)
+    }
 
 
     init {

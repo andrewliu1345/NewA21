@@ -24,7 +24,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:testOnly="false"
-        android:theme="@style/AppTheme">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -35,6 +35,8 @@
         <activity android:name=".SignActivity">
         </activity>
         <activity android:name=".PbocActivity">
+        </activity>
+        <activity android:name=".PinPadActivity">
         </activity>
     </application>
 
