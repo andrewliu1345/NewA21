@@ -6,6 +6,7 @@
     android:id="@+id/btnGetSnr"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBrack"
     tools:context=".MainActivity">
 
     <com.joesmate.uiimple.GestureVolume
