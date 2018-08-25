@@ -1,9 +1,12 @@
 package com.joesmate.new21demo
 
 import android.content.Intent
+import android.net.Uri
+import android.opengl.Visibility
 import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Display
 import android.view.View
 import com.joesmate.btfactory.BtFactory
 import com.joesmate.entity.App
@@ -41,6 +44,24 @@ class MainActivity : AppCompatActivity() {
         iniDevice()
         getInfo()
         // App.getInstance().TTS!!.doSpeek("欢迎使用")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //App.getInstance().TTS!!.doSpeek("欢迎使用")
+    }
+
+    override fun onResume() {
+        App.getInstance().LogMs?.i("onResume", "")
+        super.onResume()
+        Thread(object : Runnable {
+            override fun run() {
+                Thread.sleep(4000)
+                App.getInstance().TTS!!.doSpeek("欢迎使用")
+            }
+
+        }).start()
+        //App.getInstance().TTS!!.doSpeek("欢迎使用")
     }
 
 
@@ -87,7 +108,8 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPostExecute(result: Void?) {
                 txtInfo.append("完成初始.....\n")
-                tts?.doSpeek("完成初始")
+                //tts?.doSpeek("完成初始")
+
                 super.onPostExecute(result)
 
             }
@@ -105,6 +127,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getIDCard(v: View) {
+        test_gif.setBackgroundResource(R.drawable.id)
         object : AsyncTask<Void, Void, ByteArray>() {
             override fun doInBackground(vararg params: Void?): ByteArray {
                 var buffer = ByteArray(2321)
@@ -154,7 +177,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: ByteArray?) {
-
+                test_gif.setImageResource(0)
+                test_gif.setBackgroundResource(0)
+//                test_gif.setImageResource(0)
+//                test_gif.invalidate()
+                //test_gif.visibility=View.INVISIBLE
                 //txtInfo.append("身份证打开错误 iRet=$iRet")
                 if (result?.size == 0) {
                     txtInfo.append("身份证打开错误 \n")
@@ -181,6 +208,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getICCard(v: View) {//IC卡操做
+        test_gif.setBackgroundResource(R.drawable.ic)
         object : AsyncTask<Void, String, String>() {
             override fun onPreExecute() {
                 txtInfo.text = ""
@@ -249,6 +277,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: String?) {
+                test_gif.setImageResource(0)
+                test_gif.setBackgroundResource(0)
                 txtInfo.append(result)
                 // tts!!.doSpeek(result)
                 super.onPostExecute(result)
@@ -260,6 +290,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getMagnetic(v: View) {
+        test_gif.setImageResource(R.drawable.mag)
         object : AsyncTask<Void, Void, String>() {
             override fun doInBackground(vararg params: Void?): String {
                 var sReturn = ""
@@ -312,6 +343,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: String?) {
+                test_gif.setImageResource(0)
+                test_gif.setBackgroundResource(0)
                 txtInfo.append(result)
                 // tts!!.doSpeek(result)
                 super.onPostExecute(result)
@@ -345,6 +378,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getFp(v: View) {
+        test_gif.setImageResource(R.drawable.finger)
         object : AsyncTask<Void, String, String>() {
             override fun doInBackground(vararg params: Void?): String {
                 /// var startTime = System.currentTimeMillis()
@@ -404,6 +438,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: String?) {
+                test_gif.setImageResource(0)
+                test_gif.setBackgroundResource(0)
+
                 txtInfo.append(result)
                 super.onPostExecute(result)
             }
@@ -435,6 +472,7 @@ class MainActivity : AppCompatActivity() {
 
     fun openKey(v: View) {
         isQuit = false
+        test_gif.setImageResource(R.drawable.key)
         object : AsyncTask<Void, String, Void>() {
             override fun doInBackground(vararg params: Void?): Void? {
                 var ret = Key.Lib_KbFlush()
@@ -466,6 +504,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: Void?) {
+                test_gif.setImageResource(0)
+                test_gif.setBackgroundResource(0)
                 txtInfo.setText("已结束")
                 super.onPostExecute(result)
             }
@@ -502,6 +542,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getNfc(v: View) {
+        test_gif.setImageResource(R.drawable.nfc)
         object : AsyncTask<Void, String, String>() {
             override fun onPreExecute() {
                 txtInfo.text = ""
@@ -560,6 +601,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(result: String?) {
+                test_gif.setImageResource(0)
+                test_gif.setBackgroundResource(0)
                 txtInfo.append(result)
                 //  tts?.doSpeek(result)
                 super.onPostExecute(result)

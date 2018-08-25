@@ -22,7 +22,9 @@ class TextToSpeechForAndroid : BaseVoice {
     }
 
     internal var TTS_InitListener: TextToSpeech.OnInitListener = TextToSpeech.OnInitListener { status ->
+        Log.i("TextToSpeechForAndroid","InitListener status ${status}")
         if (status == TextToSpeech.SUCCESS) {
+
             //  设置中文朗读
             val result = tts?.setLanguage(Locale.CHINA)
             //  若不支持所设置的语言
