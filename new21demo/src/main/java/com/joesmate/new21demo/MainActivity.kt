@@ -1,19 +1,17 @@
 package com.joesmate.new21demo
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.opengl.Visibility
 import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.view.Display
 import android.view.View
 import com.joesmate.btfactory.BtFactory
 import com.joesmate.entity.App
 import com.joesmate.gpio.GpioFactory
 import com.joesmate.utility.DataDispose
 import kotlinx.android.synthetic.main.activity_main.*
-
 import java.util.*
 import com.joesmate.utility.toHexString
 import vpos.apipackage.*
@@ -22,6 +20,8 @@ import vpos.apipackage.APDU_RESP
 import vpos.apipackage.Icc
 import vpos.apipackage.APDU_SEND
 import vpos.apipackage.Picc
+import android.os.PowerManager
+import android.app.KeyguardManager
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,9 +40,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //var contex=this.applicationContext
+        Thread(object : Runnable {
+            override fun run() {
+                Thread.sleep(4000)
+                App.getInstance().TTS!!.doSpeek("欢迎使用")
+            }
 
+        }).start()
         iniDevice()
         getInfo()
+        screenOn()
         // App.getInstance().TTS!!.doSpeek("欢迎使用")
     }
 
@@ -54,16 +61,26 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         App.getInstance().LogMs?.i("onResume", "")
         super.onResume()
-        Thread(object : Runnable {
-            override fun run() {
-                Thread.sleep(4000)
-                App.getInstance().TTS!!.doSpeek("欢迎使用")
-            }
 
-        }).start()
         //App.getInstance().TTS!!.doSpeek("欢迎使用")
     }
 
+    private fun screenOn() {
+        // turn on screen
+        val mPowerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val screenOn = mPowerManager.isScreenOn
+        if (!screenOn) {
+            val mWakeLock = mPowerManager.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP), "tag")
+            mWakeLock.acquire()
+            mWakeLock.release()
+        }
+        // 屏幕解锁
+        val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val keyguardLock = keyguardManager.newKeyguardLock("unLock")
+        // 屏幕锁定
+        keyguardLock.reenableKeyguard()
+        keyguardLock.disableKeyguard() // 解锁
+    }
 
     //var financiaModWorkStateGpio = GpioFactory.createFinanciaModWorkStateGpio()
     fun iniDevice() {
@@ -122,8 +139,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @SuppressLint("NewApi")
     fun getInfo() {
-
+        // Settings.Global.putInt(this.contentResolver,Settings.Global.ADB_ENABLED,1)
     }
 
     fun getIDCard(v: View) {
@@ -138,7 +156,7 @@ class MainActivity : AppCompatActivity() {
 //                    return ByteArray(0)
 //                }
                 var startTime = System.currentTimeMillis()
-                Thread.sleep(2000)
+                // Thread.sleep(2000)
 
                 while (true) {
                     if (System.currentTimeMillis() - startTime > 10000) {

@@ -6,7 +6,7 @@
     android:id="@+id/btnGetSnr"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBrack"
+    android:background="@color/colorBlack"
     tools:context=".MainActivity">
 
     <com.joesmate.uiimple.GestureVolume
@@ -37,6 +37,7 @@
         android:fadeScrollbars="false"
         android:scrollbars="vertical"
         android:singleLine="false"
+        android:textColor="@color/colorWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnSign"
         app:layout_constraintHorizontal_bias="0.2"

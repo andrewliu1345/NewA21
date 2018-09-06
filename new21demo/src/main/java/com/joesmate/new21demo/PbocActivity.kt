@@ -16,6 +16,7 @@ class PbocActivity : AppCompatActivity() {
         fun doReadCard(channel: Byte): Array<String>?
     }
 
+    val tts = App.getInstance().TTS
     var Logs: LogMsImpl? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,6 +79,9 @@ class PbocActivity : AppCompatActivity() {
             }
             publishProgress("找到卡，channel=$channel \n")
             var result = params[0]!!.doReadCard(channel.toByte())
+            if (channel == 1) {
+                Picc.Lib_PiccClose()
+            }
             if (result != null && result.size >= 0) {
                 return result
             }
@@ -87,6 +91,7 @@ class PbocActivity : AppCompatActivity() {
         override fun onPreExecute() {
             super.onPreExecute()
             txtInfo.text = "请刷卡\n"
+            tts!!.doSpeek("请刷卡")
         }
 
         override fun onProgressUpdate(vararg values: String?) {
@@ -98,9 +103,14 @@ class PbocActivity : AppCompatActivity() {
             super.onPostExecute(result)
 
             if (result != null && result.size > 0) {
+                tts!!.doSpeek("读卡成功")
                 txtInfo.append("读卡成功\n")
                 for (msg in result) {
-                    txtInfo.append(msg)
+                    if (msg != null)
+                        txtInfo.append(msg)
+                    else
+                        txtInfo.append("无效数据")
+                    txtInfo.append("\n")
                 }
                 txtInfo.append("\n")
             }
@@ -155,6 +165,7 @@ class PbocActivity : AppCompatActivity() {
                         Logs!!.i("FindICCard,成功", "$lpAtr")
                         return 0
                     }
+                    Icc.Lib_IccClose(j.toByte())
                 }
             }
         }
@@ -162,15 +173,15 @@ class PbocActivity : AppCompatActivity() {
     }
 
     fun FindNfcCard(): Int {
-        val cardtype = ByteArray(1)
-        val uid = ByteArray(64)
+        val cardtype = ByteArray(3)
+        val uid = ByteArray(50)
         Picc.Lib_PiccOpen()
-        var ret = Picc.Lib_PiccCheck(0x00.toByte(), cardtype, uid)
-        Picc.Lib_PiccClose()
+        var ret = Picc.Lib_PiccCheck('A'.toByte(), cardtype, uid)
         if (ret == 0) {
             Logs!!.i("FindNfcCard,成功", "$uid")
             return 0
         }
+        Picc.Lib_PiccClose()
         return -1
     }
 }
