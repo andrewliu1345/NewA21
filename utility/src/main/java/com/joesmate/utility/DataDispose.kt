@@ -33,22 +33,20 @@ object DataDispose {
 
     fun unPackData(buffer: ByteArray, mun: Int): List<ByteArray> {
         val bBuffLen = ByteArray(2)
-        var iBuffler = 0
         System.arraycopy(buffer, 1, bBuffLen, 0, 2)
-        iBuffler = bBuffLen.toIntH()
+        var iBuffler = bBuffLen.toIntH().toInt()
 
         var index = 5
         val list: MutableList<ByteArray> = mutableListOf()
         for (i in 0 until mun) {
             val bLen = ByteArray(2)
-            var iLen = 0
             System.arraycopy(buffer, index, bLen, 0, 2)
-            iLen = bLen.toIntH()
+            var iLen = bLen.toIntH()
             index += 2
 
-            val bParm = ByteArray(iLen)
-            System.arraycopy(buffer, index, bParm, 0, iLen)
-            index += iLen
+            val bParm = ByteArray(iLen.toInt())
+            System.arraycopy(buffer, index, bParm, 0, iLen.toInt())
+            index += iLen.toInt()
             list.add(bParm)
             if (index >= iBuffler) {
                 break

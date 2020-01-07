@@ -28,18 +28,18 @@
         android:supportsRtl="true"
         android:testOnly="false"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity" android:screenOrientation="sensorLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".SignActivity">
+        <activity android:name=".SignActivity" android:screenOrientation="sensorLandscape">
         </activity>
-        <activity android:name=".PbocActivity">
+        <activity android:name=".PbocActivity" android:screenOrientation="sensorLandscape">
         </activity>
-        <activity android:name=".PinPadActivity">
+        <activity android:name=".PinPadActivity" android:screenOrientation="sensorLandscape">
         </activity>
     </application>
 

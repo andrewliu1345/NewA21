@@ -2,7 +2,27 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../NewA21.iml" filepath="$PROJECT_DIR$/../NewA21.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../app/app.iml" filepath="$PROJECT_DIR$/../app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../basksplint/basksplint.iml" filepath="$PROJECT_DIR$/../basksplint/basksplint.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../basksplintfactory/basksplintfactory.iml" filepath="$PROJECT_DIR$/../basksplintfactory/basksplintfactory.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../btfactory/btfactory.iml" filepath="$PROJECT_DIR$/../btfactory/btfactory.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../entity/entity.iml" filepath="$PROJECT_DIR$/../entity/entity.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../gpio/gpio.iml" filepath="$PROJECT_DIR$/../gpio/gpio.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ibasksplint/ibasksplint.iml" filepath="$PROJECT_DIR$/../ibasksplint/ibasksplint.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ibt/ibt.iml" filepath="$PROJECT_DIR$/../ibt/ibt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ibtcallback/ibtcallback.iml" filepath="$PROJECT_DIR$/../ibtcallback/ibtcallback.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../logs/logs.iml" filepath="$PROJECT_DIR$/../logs/logs.iml" />
       <module fileurl="file://$PROJECT_DIR$/new21demo.iml" filepath="$PROJECT_DIR$/new21demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../printer/printer.iml" filepath="$PROJECT_DIR$/../printer/printer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../properties/properties.iml" filepath="$PROJECT_DIR$/../properties/properties.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../serialport/serialport.iml" filepath="$PROJECT_DIR$/../serialport/serialport.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../serialportbt/serialportbt.iml" filepath="$PROJECT_DIR$/../serialportbt/serialportbt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../server/server.iml" filepath="$PROJECT_DIR$/../server/server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../socketbt/socketbt.iml" filepath="$PROJECT_DIR$/../socketbt/socketbt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../uiimple/uiimple.iml" filepath="$PROJECT_DIR$/../uiimple/uiimple.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../utility/utility.iml" filepath="$PROJECT_DIR$/../utility/utility.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../voice/voice.iml" filepath="$PROJECT_DIR$/../voice/voice.iml" />
     </modules>
   </component>
 </project>

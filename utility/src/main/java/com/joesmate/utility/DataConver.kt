@@ -1,5 +1,7 @@
 package com.joesmate.utility
 
+import android.widget.TextView
+import java.nio.ByteBuffer
 
 
 fun String.toHexByteArray(): ByteArray? {
@@ -48,15 +50,42 @@ fun Int.toByteArrary(): ByteArray {
 
 }
 
-fun ByteArray.toIntH(): Int {
-    var sum = 0
-//    if (this == null) {
-//        return sum
-//    }
 
+fun ByteArray.toIntH(): Long {
+    var sum: Long = 0
     val ilen = this.size
     for (i in 0 until ilen) {
-        sum += ((this[i].toInt() shl 8) * (ilen - 1 - i)) and 0xFFFF
+        sum += ((this[i].toLong() and 0xFF) shl (8 * (ilen - 1 - i)))
     }
     return sum
+}
+
+fun ByteArray.toIntL(): Long {
+    var sum: Long = 0
+    val ilen = this.size
+    for (i in 0 until ilen) {
+        sum += ((this[i].toLong() and 0xFF) shl (8 * i))
+    }
+    return sum
+}
+
+fun TextView.refreshTextView(msg: String) {
+    this.append(msg)
+    var offset = this.lineCount * this.lineHeight
+    if (offset > this.height) {
+        this.scrollTo(0, offset - this.height)
+    }
+}
+
+fun Long.toByteArray(): ByteArray {
+    val buffer: ByteBuffer = ByteBuffer.allocate(8)
+    buffer.putLong(0, this)
+    return buffer.array()
+}
+
+fun ByteArray.toLong(): Long {
+    val buffer = ByteBuffer.allocate(8)
+    buffer.put(this, 0, this.size)
+    buffer.flip()
+    return buffer.long
 }

@@ -21,7 +21,15 @@ import java.util.*
 class SocketBT
 constructor(private var mContext: Context?) : BaseBT {
     override fun setName(text: String?) {
-        mBluetoothAdapter!!.setName(text)
+        var SetName = mBluetoothAdapter!!::class.java.getMethod("setWWZLName", String::class.java)
+        var i = SetName.invoke(mBluetoothAdapter, text)
+        if (i==false)
+            throw java.lang.Exception("修改蓝牙名失败")
+        // mBluetoothAdapter!!.setName(text)
+    }
+
+    override fun getName(): String {
+        return mBluetoothAdapter!!.name
     }
 
 

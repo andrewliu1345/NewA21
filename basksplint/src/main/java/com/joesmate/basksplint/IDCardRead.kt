@@ -48,10 +48,10 @@ class IDCardRead : BaseBaskSplint {
 
 
     private fun readIDCard(buffer: ByteArray) {
-        var m_TimeOut = 0
+        var m_TimeOut:Long = 0
         val lParams = DataDispose.unPackData(buffer, 1)
         val itimeout = lParams[0].toIntH()
-        if (itimeout == 0) {
+        if (itimeout == 0.toLong()) {
             m_TimeOut = 30000
         } else {
             m_TimeOut = itimeout * 1000
