@@ -8,7 +8,6 @@ import com.josemate.ibt.BaseBT
 import com.jostmate.libserialport.LibSerialPort
 import com.jostmate.libserialport.LibSerialPort.device_write
 import java.util.*
-import kotlin.experimental.and
 
 /**
  * @author andrewliu
@@ -56,6 +55,10 @@ class SerialPortBT(private var mContext: Context?) : BaseBT {
 
 
         return
+    }
+
+    override fun getName(): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private var path = ""

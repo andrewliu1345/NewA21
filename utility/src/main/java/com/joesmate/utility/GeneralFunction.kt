@@ -1,5 +1,8 @@
 package com.joesmate.utility
 
+import android.content.Context
+import android.os.PowerManager
+import android.os.SystemClock
 import android.util.Log
 import java.io.ByteArrayOutputStream
 import java.util.zip.Deflater
@@ -40,5 +43,26 @@ object GeneralFunction {
             Log.e(TAG, "Daley: ", ex)
         }
 
+    }
+
+    /**
+     * 唤醒屏幕
+     */
+    fun screenOn(context: Context) {
+        var pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        var method = pm.javaClass.getMethod("wakeUp", Long::class.java)
+        method.invoke(pm, SystemClock.uptimeMillis())
+        android.util.Log.i("cxq", "screenOn")
+
+    }
+
+    /**
+     * 熄灭屏幕
+     */
+    fun screenOff(context: Context) {
+        var pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        var method = pm.javaClass.getMethod("goToSleep", Long::class.java)
+        method.invoke(pm, SystemClock.uptimeMillis())
+        android.util.Log.i("cxq", "screenOff")
     }
 }
