@@ -34,6 +34,8 @@ dependencies {
     implementation project(':ibt')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation project(':gpio')
+    implementation project(path: ':entity')
+    implementation project(path: ':voice')
 }
 repositories {
     mavenCentral()

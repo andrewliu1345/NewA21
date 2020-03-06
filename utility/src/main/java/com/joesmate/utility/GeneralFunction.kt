@@ -36,6 +36,9 @@ object GeneralFunction {
         return bos.toByteArray()
     }
 
+    /**
+     * 延时
+     */
     fun dalpey(time: Long) {
         try {
             Thread.sleep(time)

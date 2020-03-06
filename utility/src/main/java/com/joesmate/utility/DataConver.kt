@@ -43,6 +43,25 @@ fun ByteArray?.toHexString(length: Int): String? {
     return stringBuilder.toString()
 }
 
+fun ByteArray?.toHexString(): String? {
+
+    val stringBuilder = StringBuilder("")
+    if (this == null || this.isEmpty()) {
+        return null
+    }
+    var len = this.size
+
+    for (i in 0..len - 1) {
+        val v = this[i].toInt() and 0xFF
+        val hv = Integer.toHexString(v)
+        if (hv.length < 2) {
+            stringBuilder.append(0)
+        }
+        stringBuilder.append(hv)
+    }
+    return stringBuilder.toString()
+}
+
 fun Int.toByteArrary(): ByteArray {
     var h = this shr (8) and (0xff)
     var l = this and (0xff)

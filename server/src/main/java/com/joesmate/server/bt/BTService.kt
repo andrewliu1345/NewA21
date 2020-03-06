@@ -4,13 +4,16 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import com.joesmate.basksplintfactory.BaskSplintFactory
-import com.josemate.ibt.BaseBT
 import com.joesmate.btfactory.BtFactory
 import com.joesmate.entity.App
 import com.joesmate.entity.Common
 import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.logs.LogMsImpl
+import com.joesmate.utility.toHexString
+import com.josemate.ibt.BaseBT
 import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 
 /**
@@ -20,7 +23,7 @@ import java.util.*
  */
 class BTService : Service(), BtCallBackListening {
     override fun backData(buffer: ByteArray?) {
-
+        mbt!!.writeBt(buffer!!, buffer!!.size)
     }
 
     //蓝牙服务
@@ -50,8 +53,9 @@ class BTService : Service(), BtCallBackListening {
             val m_intent = Intent(Common.ACTION_BT_DATA)
             var _in = ByteArray(2048)
             var tmp = ByteArray(4096)
+            val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()//建立线程池，用与多线程处理数据
             while (true) {
-                if (isClose) {
+                if (isClose) {//关闭后退出
                     return
                 }
                 if (!mbt!!.getIsConneted()) {
@@ -62,25 +66,31 @@ class BTService : Service(), BtCallBackListening {
                 Arrays.fill(tmp, 0x00.toByte())
                 var tmplen = 0
 
-                var iRet = mbt!!.readBt(_in)
+                var iRet = mbt!!.readBt(_in)//读取蓝牙缓存中的数据
+                App.getInstance().LogMs!!.i("mReadSerialPort", _in.toHexString(iRet))
                 Thread.sleep(8)
-                if (iRet > 0 && _in[0].toInt() == 0x02) {
+                if (iRet > 0 && _in[0].toInt() == 0x02) {//数据判断头
                     tmplen = iRet
                     val len = (_in[1].toInt() and (0xff shl 8)) + (_in[2].toInt() and 0xff) + 5
-                    System.arraycopy(_in, 0, tmp, 0, iRet)
-                    if (tmp[len - 1] != 0x03.toByte() || len > iRet) {
+                    System.arraycopy(_in, 0, tmp, 0, iRet)//获取有效数据长度
+                    if (tmp[len - 1] != 0x03.toByte() || len > iRet) {//判断数据是否被截断
                         for (count in 0..9) {
                             Arrays.fill(_in, 0x00.toByte())
                             iRet = mbt!!.readBt(_in)
                             System.arraycopy(_in, 0, tmp, tmplen, iRet)
                             tmplen += iRet
-                            if (tmp[len - 1] == 0x03.toByte() && len <= tmplen) {
+                            if (tmp[len - 1] == 0x03.toByte() && len <= tmplen) {//判断数据结尾
                                 break
                             }
                         }
                     }
-                    var bs = BaskSplintFactory.createBaskSplint(tmp, this@BTService)
-                    bs!!.setData(tmp)
+                    var data = ByteArray(len)
+                    System.arraycopy(tmp, 0, data, 0, len)
+                    cachedThreadPool.execute {
+                        //填加到线程池中
+                        var bs = BaskSplintFactory.createBaskSplint(data, this@BTService)//创建相应的工厂
+                        bs!!.setData(data)//工厂处理数据
+                    }
 //                    m_intent.putExtra(Common.ACTION_BT_DATA, tmp)
 //                    App.getInstance().sendBroadcast(m_intent)
 

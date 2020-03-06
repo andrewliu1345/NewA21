@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.util.Log
+import com.joesmate.entity.App
 import com.joesmate.gpio.GpioFactory
 import com.josemate.ibt.BaseBT
 import java.io.IOException
@@ -23,7 +24,7 @@ constructor(private var mContext: Context?) : BaseBT {
     override fun setName(text: String?) {
         var SetName = mBluetoothAdapter!!::class.java.getMethod("setWWZLName", String::class.java)
         var i = SetName.invoke(mBluetoothAdapter, text)
-        if (i==false)
+        if (i == false)
             throw java.lang.Exception("修改蓝牙名失败")
         // mBluetoothAdapter!!.setName(text)
     }
@@ -169,6 +170,7 @@ constructor(private var mContext: Context?) : BaseBT {
                         ins = mSocket!!.inputStream
                         outs = mSocket!!.outputStream
                         mConneted = true
+                        App.getInstance().TTS!!.doSpeek("蓝牙已连接")
                         //ReadAndWriteTestTheard.start()
                     }
 

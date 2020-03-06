@@ -35,6 +35,7 @@ dependencies {
     implementation project(':ibtcallback')
     implementation project(path: ':utility')
     implementation project(path: ':entity')
+    implementation project(path: ':logs')
 }
 repositories {
     mavenCentral()
