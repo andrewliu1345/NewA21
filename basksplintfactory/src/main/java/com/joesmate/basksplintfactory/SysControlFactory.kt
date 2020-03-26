@@ -1,12 +1,12 @@
 package com.joesmate.basksplintfactory
 
-import com.joesmate.basksplint.IDCardRead
+
+import com.joesmate.basksplint.SysControl
 import com.joesmate.ibasksplint.BaseBaskSplint
 import com.joesmate.ibtcallback.BtCallBackListening
 
-class IDCardFactory : FactoryImpl {
-    //身份证工厂
+class SysControlFactory:FactoryImpl {
     override fun createBaskSplint(listening: BtCallBackListening): BaseBaskSplint {
-        return IDCardRead(listening)//创建身份证实体
+        return SysControl(listening)//创建身份证实体
     }
 }

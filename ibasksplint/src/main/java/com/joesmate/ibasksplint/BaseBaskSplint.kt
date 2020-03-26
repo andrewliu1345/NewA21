@@ -1,7 +1,7 @@
 package com.joesmate.ibasksplint
 
-import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.entity.Common
+import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.utility.DataDispose
 import com.joesmate.utility.toIntH
 
@@ -22,7 +22,7 @@ abstract class BaseBaskSplint {
         m_Cmd[0] = buffer[3]//模块
         m_Cmd[1] = buffer[4]//功能
         var lenby = buffer.copyOfRange(1, 3).toIntH().toInt()//获取数据长度
-        m_buffer = buffer.copyOfRange(5, 5+ lenby-2)//获取数据，剔除模块功能标志位
+        m_buffer = buffer.copyOfRange(5, 5 + lenby - 2)//获取数据，剔除模块功能标志位
     }
 
     protected fun onCancel() {//取消操作
@@ -32,11 +32,19 @@ abstract class BaseBaskSplint {
     protected fun backData(buffer: ByteArray?, lenght: Int) {//返回数据
         val bsendBuffer = DataDispose.toPackData(m_Cmd, Common.SUCCEE_CODE, buffer, lenght)
         m_CallBackListening.backData(bsendBuffer)
-
+    }
+    protected fun backData( buffer: ByteArray?) {//返回数据
+        m_CallBackListening.backData(buffer)
     }
 
     protected fun backErrData(errcode: ByteArray) {//返回错误数据
         val bsendBuffer = DataDispose.toPackData(m_Cmd, Common.ERR_CODE, errcode, errcode.size)
+        m_CallBackListening.backData(bsendBuffer)
+    }
+
+    protected fun backSuessData() {
+
+        val bsendBuffer =  DataDispose.toPackData(m_Cmd, Common.SUCCEE_CODE, ByteArray(0), 0)
         m_CallBackListening.backData(bsendBuffer)
     }
 }

@@ -23,7 +23,8 @@ import java.util.concurrent.Executors
  */
 class BTService : Service(), BtCallBackListening {
     override fun backData(buffer: ByteArray?) {
-        mbt!!.writeBt(buffer!!, buffer!!.size)
+        var iret= mbt!!.writeBt(buffer!!, buffer.size)
+        App.instance!!.LogMs!!.e("BTServce","iret=${iret}")
     }
 
     //蓝牙服务
@@ -32,7 +33,7 @@ class BTService : Service(), BtCallBackListening {
     }
 
     private var isClose = false
-    val mLog: LogMsImpl? = App.getInstance().LogMs
+    val mLog: LogMsImpl? = App.instance!!.LogMs
     private var mbt: BaseBT? = null
     override fun onCreate() {
         super.onCreate()
@@ -50,7 +51,7 @@ class BTService : Service(), BtCallBackListening {
 
     internal var mReadSerialPort: Thread = object : Thread() {
         override fun run() {
-            val m_intent = Intent(Common.ACTION_BT_DATA)
+           // val m_intent = Intent(Common.ACTION_BT_DATA)
             var _in = ByteArray(2048)
             var tmp = ByteArray(4096)
             val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()//建立线程池，用与多线程处理数据
@@ -67,7 +68,7 @@ class BTService : Service(), BtCallBackListening {
                 var tmplen = 0
 
                 var iRet = mbt!!.readBt(_in)//读取蓝牙缓存中的数据
-                App.getInstance().LogMs!!.i("mReadSerialPort", _in.toHexString(iRet))
+                App.instance!!.LogMs!!.i("mReadSerialPort", _in.toHexString(iRet))
                 Thread.sleep(8)
                 if (iRet > 0 && _in[0].toInt() == 0x02) {//数据判断头
                     tmplen = iRet
@@ -92,7 +93,7 @@ class BTService : Service(), BtCallBackListening {
                         bs!!.setData(data)//工厂处理数据
                     }
 //                    m_intent.putExtra(Common.ACTION_BT_DATA, tmp)
-//                    App.getInstance().sendBroadcast(m_intent)
+//                    App.instance!!.sendBroadcast(m_intent)
 
 
                 }

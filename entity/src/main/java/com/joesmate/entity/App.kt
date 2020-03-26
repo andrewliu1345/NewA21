@@ -8,10 +8,11 @@ import com.joesmate.voice.ivoice.BaseVoice
 
 class App : Application() {
     companion object {
-        private var mApp: App? = null
-        fun getInstance(): App {
-            return mApp!!
-        }
+        private var _instance: App? = null
+        var instance: App? = null
+            get() {
+                return _instance!!
+            }
     }
 
     private var _log: LogMsImpl? = null
@@ -32,9 +33,9 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        mApp = this
-        _tts = VoiceFactory.createVoice(mApp!!.applicationContext)
-        _log = LoggerFactory.createLogger(mApp!!.applicationContext)
+        _instance = this
+        _tts = VoiceFactory.createVoice(_instance!!.applicationContext)
+        _log = LoggerFactory.createLogger(_instance!!.applicationContext)
         _log?.i("APP", "Application.onCreate()", null)
     }
 

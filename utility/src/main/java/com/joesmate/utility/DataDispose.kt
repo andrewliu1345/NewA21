@@ -37,6 +37,39 @@ object DataDispose {
     /**
      * 数据打包
      */
+    fun toPackData(cmd: ByteArray, flag: ByteArray, mun: Int, vararg arg: ByteArray?): ByteArray? {
+        var len = 0;
+        arg.forEach {
+            len += it!!.size + 2//数据长度+2位长度
+        }
+        var tmplen = cmd.size + flag.size + len//计算缓冲区大小
+        var buffer = ByteArray(tmplen + 5)
+        var tmp = ByteArray(tmplen)
+        var index = 0
+        System.arraycopy(cmd, 0, tmp, index, cmd.size)
+        index += cmd.size
+        System.arraycopy(flag, 0, tmp, index, flag.size)
+        index += flag.size
+        arg.forEach {
+            System.arraycopy(it!!.size.toByteArrary(), 0, tmp, index, 2)
+            index += 2
+            System.arraycopy(it!!, 0, tmp, index, it.size)
+            index += it.size
+        }
+
+        var crc = getCrc(tmp)
+        buffer[0] = 0x02
+        buffer[1] = (tmplen shr (8)).toByte()
+        buffer[2] = (tmplen ).toByte()
+        System.arraycopy(tmp, 0, buffer, 3, tmplen)
+        buffer[tmplen + 3] = crc
+        buffer[tmplen + 4] = 0x03.toByte()
+        return buffer
+    }
+
+    /**
+     * 数据打包
+     */
     fun unPackData(buffer: ByteArray, mun: Int): List<ByteArray> {
         val bBuffLen = ByteArray(2)
         System.arraycopy(buffer, 1, bBuffLen, 0, 2)
@@ -66,8 +99,8 @@ object DataDispose {
      */
     fun getCrc(data: ByteArray): Byte {
         var temp = 0
-        for (item in data) {
-            temp = temp xor (item.toInt())
+        data.forEach {
+            temp = temp xor (it.toInt() and 0xff)
         }
         return temp.toByte()
     }

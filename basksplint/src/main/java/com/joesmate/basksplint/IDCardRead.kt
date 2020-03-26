@@ -92,21 +92,21 @@ class IDCardRead : BaseBaskSplint {//身份证模块
         val itimeout = lParams[0].toIntH()
         Arrays.fill(retBuffer, 0)
         try {
-            App.getInstance().TTS!!.doSpeek("请放身份证")
+            App.instance!!.TTS!!.doSpeek("请放身份证")
             var iRet = IDCard.Lib_IDCardReadData(retBuffer, 0, itimeout.toInt()) //IDCard.Lib_IDCardRead(idcardinfo, imgdata, 30)
             if (iRet != 0) {
-                App.getInstance().TTS!!.doSpeek("读取身份证失败")
+                App.instance!!.TTS!!.doSpeek("读取身份证失败")
                 backErrData(ByteArray(1) { 0x01 })//返回错误的数据
                 return
             }
         } catch (ex: Exception) {
-            App.getInstance().TTS!!.doSpeek("读取身份证失败")
+            App.instance!!.TTS!!.doSpeek("读取身份证失败")
             backErrData(ByteArray(1) { 0x01 })//返回错误的数据
             return
         } finally {
             IDCard.Lib_IDCardClose()//关闭身份证模块
         }
-        App.getInstance().TTS!!.doSpeek("读取身份证成功")
+        App.instance!!.TTS!!.doSpeek("读取身份证成功")
         ReadOK = false
         var tmplen = retBuffer.copyOfRange(0, 2).toIntH().toInt() + 2//获取有效果数据的长度
         var tmpbuffer = retBuffer.copyOfRange(0, tmplen)//拷贝有效数据

@@ -1,16 +1,20 @@
 package com.josemate.socketbt
 
 import android.bluetooth.BluetoothAdapter
+
 import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
+
 import android.content.Context
+
 import android.util.Log
 import com.joesmate.entity.App
-import com.joesmate.gpio.GpioFactory
+
 import com.josemate.ibt.BaseBT
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+
 import java.util.*
 
 
@@ -22,10 +26,17 @@ import java.util.*
 class SocketBT
 constructor(private var mContext: Context?) : BaseBT {
     override fun setName(text: String?) {
-        var SetName = mBluetoothAdapter!!::class.java.getMethod("setWWZLName", String::class.java)
-        var i = SetName.invoke(mBluetoothAdapter, text)
-        if (i == false)
-            throw java.lang.Exception("修改蓝牙名失败")
+        try {
+            var SetName = mBluetoothAdapter!!::class.java.getMethod("setWWZLName", String::class.java)
+            var i = SetName.invoke(mBluetoothAdapter, text)
+            if (i == false)
+                throw java.lang.Exception("修改蓝牙名失败")
+        } catch (e: java.lang.Exception) {
+
+        }
+        mBluetoothAdapter!!.setName(text)
+        // if (!i)
+        // throw java.lang.Exception("修改蓝牙名失败")
         // mBluetoothAdapter!!.setName(text)
     }
 
@@ -39,9 +50,9 @@ constructor(private var mContext: Context?) : BaseBT {
         // iniBtServerSocket();
     }
 
-    var bt = GpioFactory.createBtGpio()
+    //  var bt = GpioFactory.createBtGpio()
     private fun iniBtAdapter() {
-        bt?.offPower()
+        //bt.offPower()
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         if (mBluetoothAdapter == null) {
             throw Exception("蓝牙未找到")
@@ -51,6 +62,7 @@ constructor(private var mContext: Context?) : BaseBT {
         if (!mBluetoothAdapter!!.isEnabled) {
             Log.w("iniBtAdapter", "mBluetoothAdapter.isEnabled()=fales")
             mBluetoothAdapter!!.enable()
+
         }
     }
 
@@ -170,7 +182,7 @@ constructor(private var mContext: Context?) : BaseBT {
                         ins = mSocket!!.inputStream
                         outs = mSocket!!.outputStream
                         mConneted = true
-                        App.getInstance().TTS!!.doSpeek("蓝牙已连接")
+                        App.instance!!.TTS!!.doSpeek("蓝牙已连接")
                         //ReadAndWriteTestTheard.start()
                     }
 
@@ -260,6 +272,8 @@ constructor(private var mContext: Context?) : BaseBT {
             setDiscoverableTimeout.invoke(adapter, timeout)
             setScanMode.invoke(adapter, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, timeout)
         }
+
+
     }
 
 
@@ -276,4 +290,5 @@ constructor(private var mContext: Context?) : BaseBT {
 //            }
 //        }
 //    }
+
 }

@@ -30,23 +30,23 @@ class BaskSplintFactory {
 
                     }
                     var properties = Properties()
-                    var _in = App.getInstance().applicationContext.assets.open("app.config")//读取配置文件
+                    var _in = App.instance!!.applicationContext.assets.open("app.config")//读取配置文件
                     properties.load(_in)
                     var classname = properties.getProperty(scmd)
                     if (classname==""||classname==null)
                     {
-                        App.getInstance().LogMs?.e(TAG, "配置文件未找到相应类")
+                        App.instance!!.LogMs?.e(TAG, "配置文件未找到相应类")
                         throw  Exception("配置文件未找到相应类")
                     }
                     var cClass = Class.forName(classname)//反射找到对映的工厂
                     var obj = cClass.newInstance()
                     if (obj == null) {//未找到对应的类
-                        App.getInstance().LogMs?.e(TAG, "未找到相应类${classname}，无法实例化")
+                        App.instance!!.LogMs?.e(TAG, "未找到相应类${classname}，无法实例化")
                         throw  Exception("未找到相应类${classname}，无法实例化")
                     }
                     var factory = obj as FactoryImpl//实例化工厂
                     bs = factory.createBaskSplint(listening)
-                    ArryBaseBask.put(scmd!!, bs!!)
+                    ArryBaseBask.put(scmd, bs!!)
 
                 }
 
