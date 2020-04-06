@@ -1,5 +1,5 @@
 package com.joesmate.ibtcallback
 
 interface BtCallBackListening {
-    fun backData(buffer:ByteArray?)
+    fun backData(buffer:ByteArray)
 }

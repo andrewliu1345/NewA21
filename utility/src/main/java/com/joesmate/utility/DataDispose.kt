@@ -6,7 +6,7 @@ object DataDispose {
     /**
      * 数据打包
      */
-    fun toPackData(cmd: ByteArray, flag: ByteArray, packdata: ByteArray?, length: Int): ByteArray? {
+    fun toPackData(cmd: ByteArray, flag: ByteArray, packdata: ByteArray?, length: Int): ByteArray {
         var blen = length.toByteArrary()
         var tmplen = cmd.size + flag.size + blen.size + length
         var rData = ByteArray(tmplen + 5)
@@ -18,7 +18,7 @@ object DataDispose {
         index += flag.size
         if (length != 0) {
             if (packdata!!.size < length) {
-                return null
+                return ByteArray(0)
             }
             System.arraycopy(blen, 0, tmp, index, blen.size)
             index += blen.size
@@ -26,8 +26,8 @@ object DataDispose {
         }
         var crc = getCrc(tmp)
         rData[0] = 0x02
-        rData[1] = (tmplen shr (8)).toByte()
-        rData[2] = (tmplen % 0xFF).toByte()
+        rData[1] = (tmplen shr 8).toByte()
+        rData[2] = (tmplen and 0xFF).toByte()
         System.arraycopy(tmp, 0, rData, 3, tmplen)
         rData[tmplen + 3] = crc
         rData[tmplen + 4] = 0x03.toByte()
@@ -37,7 +37,7 @@ object DataDispose {
     /**
      * 数据打包
      */
-    fun toPackData(cmd: ByteArray, flag: ByteArray, mun: Int, vararg arg: ByteArray?): ByteArray? {
+    fun toPackData(cmd: ByteArray, flag: ByteArray, mun: Int, vararg arg: ByteArray?): ByteArray {
         var len = 0;
         arg.forEach {
             len += it!!.size + 2//数据长度+2位长度
@@ -60,7 +60,7 @@ object DataDispose {
         var crc = getCrc(tmp)
         buffer[0] = 0x02
         buffer[1] = (tmplen shr (8)).toByte()
-        buffer[2] = (tmplen ).toByte()
+        buffer[2] = (tmplen).toByte()
         System.arraycopy(tmp, 0, buffer, 3, tmplen)
         buffer[tmplen + 3] = crc
         buffer[tmplen + 4] = 0x03.toByte()

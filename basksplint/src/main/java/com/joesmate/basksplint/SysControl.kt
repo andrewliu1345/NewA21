@@ -1,5 +1,6 @@
 package com.joesmate.basksplint
 
+import com.joesmate.entity.App
 import com.joesmate.ibasksplint.BaseBaskSplint
 import com.joesmate.ibtcallback.BtCallBackListening
 import vpos.apipackage.Sys
@@ -21,6 +22,11 @@ class SysControl : BaseBaskSplint {
                 }
             }
             2 -> {
+
+            }
+            4 -> {
+                App.instance!!.isCancel = true
+                backSuessData()
 
             }
         }

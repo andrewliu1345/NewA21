@@ -3,6 +3,7 @@ package com.joesmate.basksplint
 import com.emv.CoreLogic
 import com.joesmate.entity.App
 import com.joesmate.logs.LogMsImpl
+import com.joesmate.utility.toHexString
 import vpos.apipackage.Icc
 import vpos.apipackage.Mcr
 import vpos.apipackage.Picc
@@ -61,15 +62,17 @@ class MposUtility {
             for (j in 0..3) {
                 //  var ret = Icc.Lib_IccCheck(j.toByte())
                 //   if (ret == 0) {
-                val lpAtr = ByteArray(128)
-                CoreLogic.iccPowerOn(0, 15, lpAtr)
+//                val lpAtr = ByteArray(128)
+//                 CoreLogic.iccPowerOn(0, 15, lpAtr)
+//                mLog!!.i("FindICCard,成功", "1.${lpAtr.toHexString()}")
                 for (i in 1..3) {
                     val lpAtr = ByteArray(40)
 
                     var ret = Icc.Lib_IccOpen(j.toByte(), i.toByte(), lpAtr)
                     if (ret == 0) {
                         Slot = j;
-                        mLog!!.i("FindICCard,成功", "$lpAtr")
+                        App.instance!!.LogMs!!.e("FindICCard", "Slot=${Slot}")
+                        mLog!!.i("FindICCard,成功", "2.${lpAtr.toHexString()}")
                         return 0
                     } else {
                         Icc.Lib_IccClose(j.toByte())

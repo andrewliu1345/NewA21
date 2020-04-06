@@ -106,6 +106,7 @@ constructor(private var mContext: Context?) : BaseBT {
                 }
 
                 if (mServerThread != null) {
+                    mServerThread!!.join()
                     mServerThread!!.interrupt()
                     mServerThread = null
                 }
@@ -138,8 +139,8 @@ constructor(private var mContext: Context?) : BaseBT {
     override fun writeBt(outputBuff: ByteArray, length: Int): Int {
         var iRet = 0
         try {
-            outs!!.flush()
             outs!!.write(outputBuff, 0, length)
+            outs!!.flush()
             iRet = length
         } catch (ex: Exception) {
             ins!!.close()

@@ -14,10 +14,10 @@ class HeartPack : BaseBaskSplint {
         super.setData(buffer)
         var tag: Int = m_Cmd[1].toInt()//功能代码
         when (tag) {
-        0x11->{
-            backSuessData();//返回成功响应
+            0x11 -> {
+                backSuessData();//返回成功响应
 
-        }
+            }
         }
     }
 

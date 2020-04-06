@@ -21,11 +21,8 @@ import java.util.concurrent.Executors
  * @create 2018/7/26
  * @Describe
  */
-class BTService : Service(), BtCallBackListening {
-    override fun backData(buffer: ByteArray?) {
-        var iret= mbt!!.writeBt(buffer!!, buffer.size)
-        App.instance!!.LogMs!!.e("BTServce","iret=${iret}")
-    }
+class BTService : Service() {
+
 
     //蓝牙服务
     override fun onBind(intent: Intent?): IBinder {
@@ -38,29 +35,33 @@ class BTService : Service(), BtCallBackListening {
     override fun onCreate() {
         super.onCreate()
         mLog?.i("BTService", "服务启动")
-        mbt = BtFactory.CreateBT(this.applicationContext)//初始化蓝牙
+        mbt = BtFactory.CreateBT(App.instance!!.applicationContext)//初始化蓝牙
         mbt?.openBt()//打开
         mLog?.i("BTService", "开始蓝牙轮寻")
-        mReadSerialPort.start()//开启蓝牙轮寻
+        if (!mReadSerialPort.isAlive)
+            mReadSerialPort.start()//开启蓝牙轮寻
     }
 
     override fun onDestroy() {
         isClose = true
+        mReadSerialPort.join()
+        mReadSerialPort.interrupt()
         super.onDestroy()
     }
 
-    internal var mReadSerialPort: Thread = object : Thread() {
+    val threadPool: ExecutorService = Executors.newSingleThreadExecutor()//建立线程池，用与多线程处理数据
+    private val mReadSerialPort: Thread = object : Thread() {
         override fun run() {
-           // val m_intent = Intent(Common.ACTION_BT_DATA)
-            var _in = ByteArray(2048)
-            var tmp = ByteArray(4096)
-            val cachedThreadPool: ExecutorService = Executors.newCachedThreadPool()//建立线程池，用与多线程处理数据
+            // val m_intent = Intent(Common.ACTION_BT_DATA)
+            var _in = ByteArray(128)
+            var tmp = ByteArray(512)
+
             while (true) {
                 if (isClose) {//关闭后退出
                     return
                 }
                 if (!mbt!!.getIsConneted()) {
-                    Thread.sleep(1000)
+                    sleep(1000)
                     continue
                 }
                 Arrays.fill(_in, 0x00.toByte())
@@ -68,9 +69,9 @@ class BTService : Service(), BtCallBackListening {
                 var tmplen = 0
 
                 var iRet = mbt!!.readBt(_in)//读取蓝牙缓存中的数据
-                App.instance!!.LogMs!!.i("mReadSerialPort", _in.toHexString(iRet))
-                Thread.sleep(8)
+
                 if (iRet > 0 && _in[0].toInt() == 0x02) {//数据判断头
+                    App.instance!!.LogMs!!.i("mReadSerialPort", _in.toHexString(iRet))
                     tmplen = iRet
                     val len = (_in[1].toInt() and (0xff shl 8)) + (_in[2].toInt() and 0xff) + 5
                     System.arraycopy(_in, 0, tmp, 0, iRet)//获取有效数据长度
@@ -85,20 +86,34 @@ class BTService : Service(), BtCallBackListening {
                             }
                         }
                     }
+                    var bs = BaskSplintFactory.createBaskSplint(tmp, object : BtCallBackListening {
+                        //返回数据回调
+                        override fun backData(buffer: ByteArray) {
+                            synchronized(Common.backDataLock) {//加锁，避免mbt 资源抢夺
+                                mbt?.writeBt(buffer, buffer.size)
+                            }
+                        }
+                    })//创建相应的工厂
                     var data = ByteArray(len)
                     System.arraycopy(tmp, 0, data, 0, len)
-                    cachedThreadPool.execute {
+                    threadPool.execute {
                         //填加到线程池中
-                        var bs = BaskSplintFactory.createBaskSplint(data, this@BTService)//创建相应的工厂
-                        bs!!.setData(data)//工厂处理数据
+                        Common.lock.lock()//锁
+                        try {
+
+                            bs!!.setData(data)//工厂处理数据
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            Common.lock.unlock()//释放锁
+                        }
                     }
 //                    m_intent.putExtra(Common.ACTION_BT_DATA, tmp)
 //                    App.instance!!.sendBroadcast(m_intent)
 
 
                 }
-
-                Thread.sleep(16)
+                Thread.sleep(200)
             }
         }
 

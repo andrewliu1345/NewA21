@@ -1,20 +1,21 @@
 package com.joesmate.ibasksplint
 
+import com.joesmate.entity.App
 import com.joesmate.entity.Common
 import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.utility.DataDispose
+import com.joesmate.utility.toHexString
 import com.joesmate.utility.toIntH
 
 
 abstract class BaseBaskSplint {
     private var m_CallBackListening: BtCallBackListening
-    protected var m_Cmd: ByteArray = ByteArray(2)
-    protected var m_buffer: ByteArray = ByteArray(0)
+    protected var m_Cmd: ByteArray = ByteArray(2)//模块、功能
+    protected var m_buffer: ByteArray = ByteArray(0)//剔除模块功能标志位后的数据
     protected var isCancel = false//是否取消
 
 
     constructor(listening: BtCallBackListening) {
-
         m_CallBackListening = listening//回调
     }
 
@@ -29,11 +30,20 @@ abstract class BaseBaskSplint {
         isCancel = true
     }
 
-    protected fun backData(buffer: ByteArray?, lenght: Int) {//返回数据
+    /**
+     * 打包数据后返回数据，一个参数的情况下。
+     */
+    protected fun backData(buffer: ByteArray, lenght: Int) {//返回数据
         val bsendBuffer = DataDispose.toPackData(m_Cmd, Common.SUCCEE_CODE, buffer, lenght)
+        App.instance!!.LogMs!!.i("backData", "bsendBuffer=${bsendBuffer.toHexString()}")
         m_CallBackListening.backData(bsendBuffer)
     }
-    protected fun backData( buffer: ByteArray?) {//返回数据
+
+    /**
+     * 返回数据，打包由上层处理
+     */
+    protected fun backData( buffer: ByteArray) {//返回数据
+        App.instance!!.LogMs!!.i("backData", "bsendBuffer=${buffer.toHexString()}")
         m_CallBackListening.backData(buffer)
     }
 

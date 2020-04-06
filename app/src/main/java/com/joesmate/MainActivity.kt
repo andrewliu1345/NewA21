@@ -1,5 +1,6 @@
 package com.joesmate
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,7 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.joesmate.entity.App
 import com.joesmate.gpio.GpioFactory
 import com.joesmate.server.bt.BTService
@@ -20,7 +21,6 @@ import com.jostmate.R
 import kotlinx.android.synthetic.main.activity_main.*
 import vpos.apipackage.SM
 import vpos.apipackage.Sys
-import java.lang.reflect.Method
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,8 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         iniDevice()
 
-        var intent = Intent(this@MainActivity, BTService::class.java)
-        startService(intent)
+
 
         intentFilter = IntentFilter()
         //这里定义接受器监听广播的类型，这里添加相应的广播
@@ -60,6 +59,12 @@ class MainActivity : AppCompatActivity() {
 //Init.execute()
     }
 
+    override fun onDestroy() {
+        financiaModGpio.offPower()
+        unregisterReceiver(myBroadcastReceiver)
+        super.onDestroy()
+        System.exit(0)
+    }
 
     fun iniDevice() {
         object : AsyncTask<Void, String, Void>() {
@@ -78,6 +83,11 @@ class MainActivity : AppCompatActivity() {
                 Thread.sleep(1000)
                 App.instance!!.LogMs!!.i("MainActivity", "打开串口 iRet=$iRet")
                 iRet = Sys.Lib_Beep()
+                if (iRet != 0) {
+                    financiaModGpio.offPower()
+                    financiaModGpio.onPower()
+                    iRet = Sys.Lib_Beep()
+                }
 
                 publishProgress("Sys.Lib_Beep iRet=$iRet \n")
 
@@ -85,8 +95,10 @@ class MainActivity : AppCompatActivity() {
                 var snr = ByteArray(16)
                 iRet = Sys.Lib_GetVersion(ver)
                 publishProgress("版本号：${ver.toHexString()} \n")
+                var btname = BluetoothAdapter.getDefaultAdapter().name
+                publishProgress("版本号：${ver.toHexString()} \n")
                 iRet = Sys.Lib_ReadSN(snr)
-                publishProgress("序列号：${String(snr)} \n")
+                publishProgress("蓝牙名：${btname} \n")
                 iRet = SM.Lib_IS8U256AInit();//国密芯片初始化
                 publishProgress("国密芯片初始化:iRet=$iRet \n")
 
@@ -94,13 +106,14 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPreExecute() {
-
                 tts?.doSpeek("正在初始化\n")
             }
 
             override fun onPostExecute(result: Void?) {
-
                 super.onPostExecute(result)
+                //初始化完成后，启动服务
+                var intent = Intent(this@MainActivity, BTService::class.java)
+                startService(intent)
             }
 
             override fun onProgressUpdate(vararg values: String?) {
@@ -112,7 +125,7 @@ class MainActivity : AppCompatActivity() {
 
 
     class BluetoothConnectActivityReceiver : BroadcastReceiver() {
-        var pin = "000000" //此处为你要连接的蓝牙设备的初始密钥000000
+        var pin = "0000" //此处为你要连接的蓝牙设备的初始密钥000000
 
         //广播接收器，当远程蓝牙设备被发现时，回调函数onReceiver()会被执行
         override fun onReceive(context: Context, intent: Intent) {

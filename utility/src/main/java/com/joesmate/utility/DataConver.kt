@@ -8,11 +8,11 @@ fun String.toHexByteArray(): ByteArray? {
     var s = this.replace(" ", "").toUpperCase()
     var length = s.length / 2
     val hexChars = s.toCharArray()
-    var buffer: ByteArray = ByteArray(length)
-    for (i in 0..length - 1) {
+    var buffer = ByteArray(length)
+    for (i in 0 until length) {
         val pos = i * 2
 
-        buffer[i / 2] = (charToByte(hexChars[pos]).toInt() shl 4 or charToByte(hexChars[pos + 1]).toInt()).toByte()
+        buffer[i] = ((charToByte(hexChars[pos]).toInt() shl 4) + charToByte(hexChars[pos + 1]).toInt()).toByte()
     }
     return buffer
 }
@@ -107,4 +107,19 @@ fun ByteArray.toLong(): Long {
     buffer.put(this, 0, this.size)
     buffer.flip()
     return buffer.long
+}
+fun ByteArray.trim(): ByteArray {
+    var flag = this.findlastnullflag()
+    return this.copyOfRange(0, flag+1)
+}
+fun ByteArray.findlastnullflag(): Int {
+    var flag = this.size - 1
+
+    for (index in flag downTo 0) {
+        if (this[index] != 0x00.toByte()) {
+            return index
+        }
+    }
+
+    return flag
 }
