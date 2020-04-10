@@ -47,11 +47,13 @@ class SM2 {
      * 加密
      */
     fun Encrypt(in_buffer: ByteArray, publicKey: ByteArray): ByteArray {
-        var out_buffer = ByteArray(64 + 128 + 32)
+        var out_buffer = ByteArray(64 + 256 + 32)
         var c1 = ByteArray(64)
-        var c2 = ByteArray(128)
+        var c2 = ByteArray(256)
         var c3 = ByteArray(32)
-        SM.Lib_SM2nEncrypt(in_buffer, in_buffer.size, publicKey, c1, c2, c3)
+        var iRet = SM.Lib_SM2nEncrypt(in_buffer, in_buffer.size, publicKey, c1, c2, c3)
+        if (iRet != 0)
+            return ByteArray(0)
         var index = 0
         var len = 0
 
@@ -89,7 +91,7 @@ class SM2 {
      * 解密
      */
     fun Decrypt(in_buffer: ByteArray, privateKey: ByteArray): ByteArray {
-        var tmp = ByteArray(128)
+        var tmp = ByteArray(256)
         var index = 0
         var C1 = in_buffer.copyOfRange(index, 64)
         index += 64;
@@ -97,7 +99,9 @@ class SM2 {
         var C3 = in_buffer.copyOfRange(flag, in_buffer.size)
         var C2 = in_buffer.copyOfRange(index, flag)
         App.instance!!.LogMs!!.i("SM2.Decrypt", "privateKey=${privateKey.toHexString()}")
-        SM.Lib_SM2nDecrypt(C1, C2, C3, C2.size, privateKey, tmp)
+       var iRet= SM.Lib_SM2nDecrypt(C1, C2, C3, C2.size, privateKey, tmp)
+        if (iRet != 0)
+            return ByteArray(0)
         App.instance!!.LogMs!!.i("SM2.Decrypt", "In=${in_buffer.toHexString()}")
         App.instance!!.LogMs!!.i("SM2.Decrypt", "C1=${C1.toHexString()}")
         App.instance!!.LogMs!!.i("SM2.Decrypt", "C2=${C2.toHexString()}")

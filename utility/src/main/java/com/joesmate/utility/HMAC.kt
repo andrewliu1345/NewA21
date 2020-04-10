@@ -12,7 +12,7 @@ class HMAC {
             opad.forEachIndexed { index, byte -> opad[index] = 0x5c }
             val ipad = ByteArray(64)
             ipad.forEachIndexed { index, byte -> opad[index] = 0x36 }
-            var WorkingKey = ByteArray(16)
+            var WorkingKey = ByteArray(32)
 
             var _r1 = ByteArray(64)
             var _r2 = ByteArray(64)

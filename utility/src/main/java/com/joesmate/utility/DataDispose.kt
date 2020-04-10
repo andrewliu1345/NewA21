@@ -71,23 +71,23 @@ object DataDispose {
      * 数据打包
      */
     fun unPackData(buffer: ByteArray, mun: Int): List<ByteArray> {
-        val bBuffLen = ByteArray(2)
-        System.arraycopy(buffer, 1, bBuffLen, 0, 2)
-        var iBuffler = bBuffLen.toIntH().toInt()
+        val bBuffLen = buffer.copyOfRange(1, 3)//ByteArray(2)
+        //  System.arraycopy(buffer, 1, bBuffLen, 0, 2)
+        var iBufflen = bBuffLen.toIntH().toInt()
 
         var index = 0
         val list: MutableList<ByteArray> = mutableListOf()
         for (i in 0 until mun) {
-            val bLen = ByteArray(2)
-            System.arraycopy(buffer, index, bLen, 0, 2)
+
+            var bLen = buffer.copyOfRange(index, index + 2)//获取长得
             var iLen = bLen.toIntH()
             index += 2
 
-            val bParm = ByteArray(iLen.toInt())
-            System.arraycopy(buffer, index, bParm, 0, iLen.toInt())
+            val bParm = buffer.copyOfRange(index, index + iLen.toInt()) //获取数据
+
             index += iLen.toInt()
             list.add(bParm)
-            if (index >= iBuffler) {
+            if (index >= iBufflen) {
                 break
             }
         }

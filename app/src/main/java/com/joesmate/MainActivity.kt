@@ -35,13 +35,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Thread(object : Runnable {
-            //欢迎语
-            override fun run() {
-                Thread.sleep(4000)
-                App.instance!!.TTS!!.doSpeek("欢迎使用")
-            }
-
+        Thread(Runnable
+        //欢迎语
+        {
+            Thread.sleep(4000)
+            App.instance!!.TTS!!.doSpeek("欢迎使用")
         }).start()
 
         iniDevice()
@@ -131,9 +129,8 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action //得到action
 
-            var btDevice: BluetoothDevice? = null //创建一个蓝牙device对象
             // 从Intent中获取设备对象
-            btDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+            var btDevice: BluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) //创建一个蓝牙device对象
             when (action) {
                 (BluetoothDevice.ACTION_FOUND) -> {
 

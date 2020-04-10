@@ -30,9 +30,9 @@ constructor(private var mContext: Context?) : BaseBT {
             var SetName = mBluetoothAdapter!!::class.java.getMethod("setWWZLName", String::class.java)
             var i = SetName.invoke(mBluetoothAdapter, text)
             if (i == false)
-                throw java.lang.Exception("修改蓝牙名失败")
-        } catch (e: java.lang.Exception) {
-
+                throw Exception("修改蓝牙名失败")
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         mBluetoothAdapter!!.setName(text)
         // if (!i)
@@ -175,10 +175,8 @@ constructor(private var mContext: Context?) : BaseBT {
                     break
                 /* 接受客户端的连接请求 */
                 try {
-                    if (mServerSocket == null) {
-                        iniBtServerSocket()
-                    }
-                    mSocket = mServerSocket!!.accept()
+
+                    mSocket = mServerSocket!!.accept()//等待连接
                     if (mSocket!!.isConnected) {
                         ins = mSocket!!.inputStream
                         outs = mSocket!!.outputStream
@@ -187,17 +185,18 @@ constructor(private var mContext: Context?) : BaseBT {
                         //ReadAndWriteTestTheard.start()
                     }
 
+                } catch (ex: NullPointerException) {
+                    iniBtServerSocket()//当mServerSocket为空时重新初始化
+                    ex.printStackTrace()
                 } catch (ex: Exception) {
                     mConneted = false
                     ex.printStackTrace()
                     //  SocketBT.this.iniBtServerSocket();
                 }
 
-                try {
-                    Thread.sleep(200)
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
+
+                // sleep(200)
+
 
             }
         }

@@ -9,6 +9,7 @@ import com.joesmate.entity.App
 import com.joesmate.entity.Common
 import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.logs.LogMsImpl
+import com.joesmate.utility.DataDispose
 import com.joesmate.utility.toHexString
 import com.josemate.ibt.BaseBT
 import java.util.*
@@ -21,8 +22,13 @@ import java.util.concurrent.Executors
  * @create 2018/7/26
  * @Describe
  */
-class BTService : Service() {
-
+class BTService : Service(), BtCallBackListening {
+    //返回数据回调
+    override fun backData(buffer: ByteArray) {
+        synchronized(Common.backDataLock) {//加锁，避免mbt 资源抢夺
+            mbt?.writeBt(buffer, buffer.size)
+        }
+    }
 
     //蓝牙服务
     override fun onBind(intent: Intent?): IBinder {
@@ -39,7 +45,7 @@ class BTService : Service() {
         mbt?.openBt()//打开
         mLog?.i("BTService", "开始蓝牙轮寻")
         if (!mReadSerialPort.isAlive)
-            mReadSerialPort.start()//开启蓝牙轮寻
+            mReadSerialPort.start()//开启蓝牙接收轮寻
     }
 
     override fun onDestroy() {
@@ -86,23 +92,19 @@ class BTService : Service() {
                             }
                         }
                     }
-                    var bs = BaskSplintFactory.createBaskSplint(tmp, object : BtCallBackListening {
-                        //返回数据回调
-                        override fun backData(buffer: ByteArray) {
-                            synchronized(Common.backDataLock) {//加锁，避免mbt 资源抢夺
-                                mbt?.writeBt(buffer, buffer.size)
-                            }
-                        }
-                    })//创建相应的工厂
-                    var data = ByteArray(len)
-                    System.arraycopy(tmp, 0, data, 0, len)
+
+
                     threadPool.execute {
                         //填加到线程池中
                         Common.lock.lock()//锁
                         try {
-
+                            var data = ByteArray(len)
+                            System.arraycopy(tmp, 0, data, 0, len)
+                            var bs = BaskSplintFactory.createBaskSplint(data, this@BTService)//创建相应的工厂
                             bs!!.setData(data)//工厂处理数据
                         } catch (e: Exception) {
+                            val bsendBuffer = DataDispose.toPackData(ByteArray(2) { 0x31;0x11 }, Common.ERR_CODE, ByteArray(1) { 1 }, 1)
+                            backData(bsendBuffer)
                             e.printStackTrace()
                         } finally {
                             Common.lock.unlock()//释放锁
@@ -113,7 +115,7 @@ class BTService : Service() {
 
 
                 }
-                Thread.sleep(200)
+                sleep(200)
             }
         }
 

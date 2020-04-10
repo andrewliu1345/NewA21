@@ -111,7 +111,8 @@ class ICCardRead : BaseBaskSplint {
                     var len = ApduResp.LenOut.toInt()
                     var apdu = ByteArray(len + 3)
                     System.arraycopy(ApduResp.dataOut, 0, apdu, 1, len)
-                    apdu[len + 1] = 0x90.toByte()
+                    apdu[len + 1] = ApduResp.SWA
+                    apdu[len + 2] = ApduResp.SWB
                     backData(apdu, apdu.size)
                 } else
                     backErrData(ByteArray(0));
@@ -132,7 +133,8 @@ class ICCardRead : BaseBaskSplint {
                     var len = ApduResp.LenOut.toInt()
                     var apdu = ByteArray(len + 3)
                     System.arraycopy(ApduResp.dataOut, 0, apdu, 1, len)
-                    apdu[len + 1] = 0x90.toByte()
+                    apdu[len + 1] = ApduResp.SWA
+                    apdu[len + 2] = ApduResp.SWB
                     backData(apdu, apdu.size)
                 } else
                     backErrData(ByteArray(0));

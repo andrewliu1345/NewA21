@@ -40,10 +40,10 @@ class BaskSplintFactory {
                 }
                 var factory = obj as FactoryImpl//实例化工厂
                 bs = factory.createBaskSplint(listening)
-                ArryBaseBask.put(scmd, bs!!)
+                ArryBaseBask[scmd] = bs!!
 
             } else {
-                bs = ArryBaseBask.get(scmd)
+                bs = ArryBaseBask[scmd]
             }
             return bs
         }

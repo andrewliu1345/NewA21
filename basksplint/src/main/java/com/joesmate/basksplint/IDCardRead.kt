@@ -11,6 +11,7 @@ import vpos.apipackage.Fingerprint
 import vpos.apipackage.IDCard
 import vpos.apipackage.Picc
 import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 class IDCardRead : BaseBaskSplint {//身份证模块
 
@@ -22,7 +23,13 @@ class IDCardRead : BaseBaskSplint {//身份证模块
         var tag: Int = m_Cmd[1].toInt()//功能代码
         when (tag) {
             0 -> {//身份证上电
-                OpenIDCard()
+                val lParams = DataDispose.unPackData(m_buffer, 1)
+                var type = lParams[0][0].toInt() == 1
+                if (type) {
+                    OpenIDCard()//打开射频
+                } else {
+                    closeIDCard()//关闭射频
+                }
             }
             1 -> {//读卡
 
@@ -31,6 +38,7 @@ class IDCardRead : BaseBaskSplint {//身份证模块
             2 -> {//读UID
                 getIDCardID()
             }
+
             else -> {
                 backErrData(byteArrayOf(0, 1))
             }
@@ -72,15 +80,25 @@ class IDCardRead : BaseBaskSplint {//身份证模块
     private fun OpenIDCard() {
 
         Fingerprint.Lib_SetFgBaudrate(115200)//恢复身份证波特率
-        var iRet = IDCard.Lib_IDCardOpen()//打开身份证模块
-        if (iRet == 0) {
-            backData(ByteArray(0), 0)
+        IDCard.Lib_IDCardOpen()//打开身份证模块
+        var samid = getSAMID()
+        if (samid.isNotEmpty()) {
+            backSuessData()
         } else {
             backErrData(ByteArray(1) { 0x01 })
         }
         Thread.sleep(400)
         getSAMID()//检查身份证模块状态
 
+    }
+
+    private fun closeIDCard() {
+        var iRet = IDCard.Lib_IDCardClose()
+        if (iRet == 0) {
+            backSuessData()
+        } else {
+            backErrData(ByteArray(1) { 0x01 })
+        }
     }
 
     /**
@@ -104,7 +122,7 @@ class IDCardRead : BaseBaskSplint {//身份证模块
             backErrData(ByteArray(1) { 0x01 })//返回错误的数据
             return
         } finally {
-            IDCard.Lib_IDCardClose()//关闭身份证模块
+           // IDCard.Lib_IDCardClose()//关闭身份证模块
         }
         App.instance!!.TTS!!.doSpeek("读取身份证成功")
         ReadOK = false
@@ -135,11 +153,10 @@ class IDCardRead : BaseBaskSplint {//身份证模块
         //  val str = ToolFun.printHexString(bytes, 3)
 
         // Log.e("成功状态：", str + "=========" + bytes)
-        if ((bytes[1].toInt() == 0x00) and (bytes[2] == 0x90.toByte())) {
-            return "身份证模块ID：${DataDispose.SequencSAMID(bytes.copyOfRange(3, 19))}"
+        return if ((bytes[1].toInt() == 0x00) and (bytes[2] == 0x90.toByte())) {
+            DataDispose.SequencSAMID(bytes.copyOfRange(3, 19))
         } else {
-            // IDCard.Lib_IDCardClose()
-            return ("身份证模块ID失败")
+            ""
         }
     }
 
