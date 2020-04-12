@@ -93,12 +93,9 @@ class IDCardRead : BaseBaskSplint {//身份证模块
     }
 
     private fun closeIDCard() {
-        var iRet = IDCard.Lib_IDCardClose()
-        if (iRet == 0) {
-            backSuessData()
-        } else {
-            backErrData(ByteArray(1) { 0x01 })
-        }
+        IDCard.Lib_IDCardClose()
+    backSuessData()
+
     }
 
     /**

@@ -5,6 +5,8 @@ import com.joesmate.entity.Common
 import com.joesmate.ibasksplint.BaseBaskSplint
 import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.utility.*
+import vpos.apipackage.Pci
+import vpos.apipackage.Picc
 import vpos.apipackage.SM
 import vpos.apipackage.Sys
 
@@ -21,12 +23,20 @@ class TransferEncrypt : BaseBaskSplint {
         super.setData(buffer)
         var tag: Int = m_Cmd[1].toInt()//功能代码
         when (tag) {
+            1->{
+                GetPinBlock()//获取pinblock
+            }
+            3->{
+                LoadMasterKey()//下载主密钥
+            }
+            4->{
+                LoadWorkingKey()//下载工作密钥
+            }
             5 -> {
-                TransferEnInit()
+                TransferEnInit()//初始化加密通道
             }
             6 -> {
-                SetR2(buffer)
-
+                SetR2(buffer)//获取R2
             }
             7 -> {
                 SendWorkingKey(buffer)
@@ -40,7 +50,7 @@ class TransferEncrypt : BaseBaskSplint {
 
         var _privatekey = privateKey.toHexByteArray()
         var _publickey = publicKey.toHexByteArray()
-        App.instance!!.LogMs!!.i("Transfer", "publicKey=$publicKey" )
+        App.instance!!.LogMs!!.i("Transfer", "publicKey=$publicKey")
         //获取随机数
         var _c1: ByteArray = SM2.instance.GetRnd()
         var _c3: ByteArray = SM2.instance.GetRnd()
@@ -91,4 +101,114 @@ class TransferEncrypt : BaseBaskSplint {
         backSuessData()
 
     }
+
+    /**
+     * 下载主密钥
+     */
+    private fun LoadMasterKey() {
+        var parms = DataDispose.unPackData(m_buffer, 3)
+        var type = parms[0].toIntH().toInt()//加密类型 0：3Des,1:SM
+        var index = parms[1].toIntH().toInt()//密码序号 0~9
+        var MKey = parms[2]//主密钥
+        when (type) {
+            0 -> {//3Des 主密钥
+                var size = MKey.size
+                var i = size / 8
+                var j = size % 8
+                if (j == 0 && i >= 0 && size <= 24)//size 需要是8,16,24
+                {
+                    var iRet = Pci.Lib_PciWriteDES_MKey(index.toByte(), size.toByte(), MKey, 0);
+                    if (iRet == 0) {
+                        backSuessData()
+                        return
+                    }
+                }
+                backErrData(ByteArray(1) { 1 })
+
+            }
+            1 -> {//sm4 主密钥
+                var size = MKey.size
+                var i = size / 8
+                var j = size % 8
+                if (j == 0 && i >= 0 && size <= 24)//size 需要是8,16,24
+                {
+                    var iRet = Pci.Lib_PciWritePIN_MKey(index.toByte(), size.toByte(), MKey, 0);//PinBlock 主密钥
+                    iRet += Pci.Lib_PciWriteMAC_MKey(index.toByte(), size.toByte(), MKey, 0);//MAC 主密钥
+                    iRet += Pci.Lib_PciWriteSM4_MKey(index.toByte(), size.toByte(), MKey, 0);//SM4 主密钥
+                    if (iRet == 0) {
+                        backSuessData()
+                        return
+                    }
+                }
+                backErrData(ByteArray(1) { 1 })
+            }
+        }
+
+    }
+
+    /**
+     * 下载工作密钥
+     */
+    private fun LoadWorkingKey() {
+        var parms = DataDispose.unPackData(m_buffer, 4)
+        var type = parms[0].toIntH().toInt()//加密类型 0：3Des,1:SM
+        var index = parms[1].toIntH().toInt()//密码序号 0~9
+        var MKey_no = parms[2].toIntH().toInt()//主密钥
+        var WKey = parms[3]//工作密钥
+        when (type) {
+            0 -> {//3Des 工作密钥
+                var size = WKey.size
+                var i = size / 8
+                var j = size % 8
+                if (j == 0 && i >= 0 && size <= 24)//size 需要是8,16,24
+                {
+                    var iRet = Pci.Lib_PciWriteDesKey(index.toByte(), size.toByte(), WKey, 0x81.toByte(), MKey_no.toByte());
+                    if (iRet == 0) {
+                        backSuessData()
+                        return
+                    }
+                }
+                backErrData(ByteArray(1) { 1 })
+
+            }
+            1 -> {//sm4 工作密钥
+                var size = WKey.size
+                var i = size / 8
+                var j = size % 8
+                if (j == 0 && i >= 0 && size <= 24)//size 需要是8,16,24
+                {
+                    var iRet = Pci.Lib_PciWritePinKey(index.toByte(), size.toByte(), WKey, 0x81.toByte(), MKey_no.toByte());//PinBlock 主密钥
+                    iRet += Pci.Lib_PciWriteMacKey(index.toByte(), size.toByte(), WKey, 0x81.toByte(), MKey_no.toByte());//MAC 主密钥
+                    iRet += Pci.Lib_PciWriteSM4Key(index.toByte(), size.toByte(), WKey, 0x81.toByte(), MKey_no.toByte());//SM4 主密钥
+
+                    if (iRet == 0) {
+                        backSuessData()
+                        return
+                    }
+                }
+                backErrData(ByteArray(1) { 1 })
+            }
+        }
+    }
+
+    private fun GetPinBlock() {
+        var pinblock = ByteArray(64)
+        var parms = DataDispose.unPackData(m_buffer, 4)
+
+        var index = parms[0].toIntH().toInt()//密码序号 0~9
+        var min_len = parms[1].toIntH().toInt()//最小长度
+        var max_len = parms[2].toIntH().toInt()//最大长度
+        var carNo = parms[3]//卡号
+        var mode = parms[4].toIntH()//加密模式 0:x9.8,1:x3.92
+        var mark = parms[5].toIntH()//0：不带金额，1：带金额
+        var amount = parms[6]//金额 长度小与14 后面补0
+        var waitTime = parms[7].toIntH()//超时时间
+        var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, mark.toByte(), amount, waitTime.toByte(), null)
+        if (iRet == 0) {
+            backData(pinblock)
+        } else {
+            backErrData(ByteArray(1) { 1 })
+        }
+    }
+
 }
