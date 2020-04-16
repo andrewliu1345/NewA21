@@ -18,6 +18,9 @@ class HeartPack : BaseBaskSplint {
                 backSuessData();//返回成功响应
 
             }
+            else-> {
+                backErrData(ByteArray(1) { 1 })
+            }
         }
     }
 

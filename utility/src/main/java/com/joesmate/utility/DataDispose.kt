@@ -1,5 +1,8 @@
 package com.joesmate.utility
 
+import vpos.apipackage.APDU_RESP
+import vpos.apipackage.APDU_SEND
+
 
 object DataDispose {
 
@@ -124,5 +127,23 @@ object DataDispose {
 
         smaid = "${String.format("%02d", HeadCode1)}.${String.format("%02d", HeadCode2)}-${String.format("%08d", DateCode)}-${String.format("%010d", HashCode1)}-${String.format("%010d", HashCode2)}"
         return smaid
+    }
+
+    fun unmarshal_capdu(apdu_in: ByteArray): APDU_SEND? {
+        val cmd = ByteArray(4)
+        val lc = apdu_in[cmd.size].toShort()
+        val dat = ByteArray(lc.toInt())
+        val le = apdu_in[cmd.size + 1 + lc].toShort()
+        System.arraycopy(apdu_in, 0, cmd, 0, cmd.size)
+        System.arraycopy(apdu_in, cmd.size + 1, dat, 0, lc.toInt())
+        return APDU_SEND(cmd, lc, dat, le)
+    }
+
+    fun marsha_rapdu(resp_in: APDU_RESP): ByteArray? {
+        val rapdu = ByteArray(resp_in.LenOut + 2)
+        System.arraycopy(resp_in.DataOut, 0, rapdu, 0, resp_in.LenOut.toInt())
+        rapdu[rapdu.size - 2] = resp_in.getSWA()
+        rapdu[rapdu.size - 1] = resp_in.getSWB()
+        return rapdu
     }
 }

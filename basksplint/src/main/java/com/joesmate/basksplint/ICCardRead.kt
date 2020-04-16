@@ -11,8 +11,6 @@ import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.logs.LogMsImpl
 import com.joesmate.utility.*
 import vpos.apipackage.*
-import java.nio.charset.Charset
-import kotlin.jvm.internal.Ref
 
 class ICCardRead : BaseBaskSplint {
     constructor(listening: BtCallBackListening) : super(listening)
@@ -98,21 +96,23 @@ class ICCardRead : BaseBaskSplint {
                 var parms = DataDispose.unPackData(m_buffer, 1)
                 var dataIn = parms[0]//银行下发的adpu 指令
                 val resp = ByteArray(520)
-                var ApduResp: APDU_RESP? = null
+                var apduSend = apdutoAPDU(dataIn)
+                var apduResp: APDU_RESP? = null
                 App.instance!!.LogMs!!.i("ICCardRead.08", "ADPUIn=${dataIn.toHexString()}")
+                App.instance!!.LogMs!!.i("ICCardRead.08", "apduSend=${apduSend.toHexString()}")
                 App.instance!!.LogMs!!.i("ICCardRead.08", "Slot=${MposUtility.Slot}")
-                var iRet = Icc.Lib_IccCommand(MposUtility.Slot.toByte(), apdutoAPDU(dataIn), resp)
+                var iRet = Icc.Lib_IccCommand(MposUtility.Slot.toByte(), apduSend, resp)
                 App.instance!!.LogMs!!.i("ICCardRead.08", "ret=$iRet,resp=${resp.toHexString()}")
                 if (0 == iRet) {
 
-                    ApduResp = APDU_RESP(resp)
-                    App.instance!!.LogMs!!.i("ICCardRead.08", "ApduResp.dataOut=${ApduResp.dataOut.toHexString()}")
+                    apduResp = APDU_RESP(resp)
+                    App.instance!!.LogMs!!.i("ICCardRead.08", "ApduResp.dataOut=${apduResp.dataOut.toHexString()}")
 
-                    var len = ApduResp.LenOut.toInt()
+                    var len = apduResp.LenOut.toInt()
                     var apdu = ByteArray(len + 3)
-                    System.arraycopy(ApduResp.dataOut, 0, apdu, 1, len)
-                    apdu[len + 1] = ApduResp.SWA
-                    apdu[len + 2] = ApduResp.SWB
+                    System.arraycopy(apduResp.dataOut, 0, apdu, 0, len)
+                    apdu[len + 1] = apduResp.SWA
+                    apdu[len + 2] = apduResp.SWB
                     backData(apdu, apdu.size)
                 } else
                     backErrData(ByteArray(0));
@@ -132,7 +132,7 @@ class ICCardRead : BaseBaskSplint {
 
                     var len = ApduResp.LenOut.toInt()
                     var apdu = ByteArray(len + 3)
-                    System.arraycopy(ApduResp.dataOut, 0, apdu, 1, len)
+                    System.arraycopy(ApduResp.dataOut, 0, apdu, 0, len)
                     apdu[len + 1] = ApduResp.SWA
                     apdu[len + 2] = ApduResp.SWB
                     backData(apdu, apdu.size)
