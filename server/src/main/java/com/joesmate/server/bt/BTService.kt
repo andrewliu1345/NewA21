@@ -85,10 +85,12 @@ class BTService : Service(), BtCallBackListening {
                         for (count in 0..9) {
                             Arrays.fill(_in, 0x00.toByte())
                             iRet = mbt!!.readBt(_in)
-                            System.arraycopy(_in, 0, tmp, tmplen, iRet)
-                            tmplen += iRet
-                            if (tmp[len - 1] == 0x03.toByte() && len <= tmplen) {//判断数据结尾
-                                break
+                            if (iRet > 0) {
+                                System.arraycopy(_in, 0, tmp, tmplen, iRet)
+                                tmplen += iRet
+                                if (tmp[len - 1] == 0x03.toByte() && len <= tmplen) {//判断数据结尾
+                                    break
+                                }
                             }
                         }
                     }
