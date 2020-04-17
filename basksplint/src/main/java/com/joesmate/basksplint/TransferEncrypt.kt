@@ -19,10 +19,11 @@ class TransferEncrypt : BaseBaskSplint {
     constructor(listening: BtCallBackListening) : super(listening)
 
     companion object {
-        private var pinBlock = ByteArray(64)
-        private var getPinBlockOK = false
-        private var Pining = false
-        private var pined = true
+        private var pinBlock = ByteArray(64)//pinblock 缓存
+        private var getPinBlockOK = false//是否获取pinblock成功
+        private var Pining = false//正在输入密码
+        private var pined = true//输入密码结束
+        private var stoplen = 6;//结束长度
     }
 
     override fun setData(buffer: ByteArray) {
@@ -245,7 +246,8 @@ class TransferEncrypt : BaseBaskSplint {
 //        }
         SystemClock.sleep(500)
         if (getPinBlockOK) {
-            backData(pinBlock, pinBlock.size)
+            var pin= pinBlock.trim()
+            backData(pin, pin.size)
         } else {
             backErrData(ByteArray(1) { 1 })
         }
@@ -255,6 +257,11 @@ class TransferEncrypt : BaseBaskSplint {
 
         if (Pining) {
             var i = Lib_GetPinEvent();
+//            if (stoplen == i) {//长度结束
+//                Key.Lib_KbFlush()
+//                backData(ByteArray(1) { 0x3f.toByte() }, 1)
+//                return
+//            }
             if (i > 0) {
                 backData(ByteArray(1) { 0x3f.toByte() }, 1)
             }
@@ -308,13 +315,14 @@ class TransferEncrypt : BaseBaskSplint {
             index = 8
         }
         var inlen = parms[1].toIntH().toShort()//长度
-        var mac = parms[2]//需要加密的mac
-        var mode = parms[3].toIntH().toInt()//算法
+        var mac = parms[2]//需要加密的数据
+        var mode = parms[3].toIntH().toInt()//加解密/1：加密，0：解密
         //App.instance!!.TTS!!.doSpeek("请输入密码")
         Key.Lib_KbFlush()
         var iRet = Pci.Lib_PciGetDes(index.toByte(), inlen, mac, macout, mode.toByte())
         if (iRet == 0) {
-            backData(macout, macout.size)
+            var out=macout.trim()
+            backData(out, out.size)
         } else {
             backErrData(ByteArray(1) { 1 })
         }
@@ -325,7 +333,7 @@ class TransferEncrypt : BaseBaskSplint {
             pinBlock.fill(0, 64)
             getPinBlockOK = false
             var pinblock = ByteArray(64)
-            var parms = DataDispose.unPackData(m_buffer, 8)
+            var parms = DataDispose.unPackData(m_buffer, 9)
 
             var index = parms[0].toIntH().toInt()//密码序号 0~9
             if (index > 8) {
@@ -333,13 +341,22 @@ class TransferEncrypt : BaseBaskSplint {
             }
             var min_len = parms[1].toIntH().toInt()//最小长度
             var max_len = parms[2].toIntH().toInt()//最大长度
+
             var carNo = parms[3]//卡号
             var mode = parms[4].toIntH()//加密模式 0:x9.8,1:x3.92
             var mark = parms[5].toIntH()//0：不带金额，1：带金额
             var amount = parms[6]//金额 长度小与14 后面补0
             var waitTime = parms[7].toIntH()//超时时间
+            var stoptype = parms[8].toIntH().toInt()
+            if (stoptype == 0)//长度结束
+            {
+                stoplen = max_len
+            } else {
+                stoplen = 12
+            }
             App.instance!!.TTS!!.doSpeek("请输入密码")
             Key.Lib_KbFlush()
+
             Pining = true
             pined = false
             var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, mark.toByte(), amount, waitTime.toByte(), null)
