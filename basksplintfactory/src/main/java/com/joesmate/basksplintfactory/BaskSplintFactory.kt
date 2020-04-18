@@ -29,7 +29,7 @@ class BaskSplintFactory {
 
                 var classname = App.instance!!.properties.getProperty(scmd)
                 if (classname == "" || classname == null) {
-                    App.instance!!.LogMs?.e(TAG, "${scmd}配置文件未找到相应类")
+                    App.instance!!.LogMs?.e(TAG, "${scmd}配置文件未找到相应类,${buffer.toHexString()}")
                     throw  Exception("配置文件未找到相应类")
                 }
                 var cClass = Class.forName(classname)//反射找到对映的工厂

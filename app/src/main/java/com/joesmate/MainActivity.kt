@@ -7,7 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.AsyncTask
+import android.os.BatteryManager
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.appcompat.app.AppCompatActivity
 import com.joesmate.entity.App
 import com.joesmate.gpio.GpioFactory
@@ -24,24 +26,37 @@ import vpos.apipackage.Sys
 
 
 class MainActivity : AppCompatActivity() {
+
+
     var bt = GpioFactory.createBtGpio()
     var financiaModGpio = GpioFactory.createFinanciaModGpio()//金融模块上下电GPIO
     var RS232Gpio = GpioFactory.createRs232Gpio()//切换金融模块与Rs232串口GPIO 用与升级金融模块
     var EHandwriteGpio = GpioFactory.createEHandwriteGpio()//电磁屏上下电
     var tts = App.instance!!.TTS
-
+    var batteryManager: BatteryManager? = null
     private var myBroadcastReceiver: BluetoothConnectActivityReceiver? = null//配对广播
     private var intentFilter: IntentFilter? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Thread(Runnable
-        //欢迎语
-        {
+        batteryManager = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        Thread(Runnable {//欢迎语
             Thread.sleep(4000)
             App.instance!!.TTS!!.doSpeek("欢迎使用")
         }).start()
+        Thread(Runnable {//获取电量
+            while (true) {
+                var battery = batteryManager!!.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                if (battery > 15)
+                    SystemClock.sleep(129000)//每两分钟检测一次
+                else {
+                    SystemClock.sleep(5000)//每5秒提醒一次
+                    App.instance!!.TTS!!.doSpeek("电量低，请及时充电")
+                }
 
+
+            }
+        }).start()
         iniDevice()
 
 
@@ -78,12 +93,14 @@ class MainActivity : AppCompatActivity() {
                 var iRet = Sys.Lib_PowerOn()//金融模块上电连接
 
                 publishProgress("打开串口 iRet=$iRet \n")
-                Thread.sleep(1000)
+                Thread.sleep(2000)
                 App.instance!!.LogMs!!.i("MainActivity", "打开串口 iRet=$iRet")
                 iRet = Sys.Lib_Beep()
                 if (iRet != 0) {
                     financiaModGpio.offPower()
+
                     financiaModGpio.onPower()
+                    Thread.sleep(2000)
                     iRet = Sys.Lib_Beep()
                 }
 

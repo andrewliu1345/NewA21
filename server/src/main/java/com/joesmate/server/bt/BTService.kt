@@ -55,12 +55,12 @@ class BTService : Service(), BtCallBackListening {
         super.onDestroy()
     }
 
-    val threadPool: ExecutorService = Executors.newSingleThreadExecutor()//建立线程池，用与多线程处理数据
+    val threadPool: ExecutorService = Executors.newFixedThreadPool(10)//建立线程池，用与多线程处理数据
     private val mReadSerialPort: Thread = object : Thread() {
         override fun run() {
             // val m_intent = Intent(Common.ACTION_BT_DATA)
-            var _in = ByteArray(128)
-            var tmp = ByteArray(512)
+            var _in = ByteArray(64)
+            var tmp = ByteArray(2048)
 
             while (true) {
                 if (isClose) {//关闭后退出
@@ -71,7 +71,7 @@ class BTService : Service(), BtCallBackListening {
                     continue
                 }
                 Arrays.fill(_in, 0x00.toByte())
-                Arrays.fill(tmp, 0x00.toByte())
+
                 var tmplen = 0
 
                 var iRet = mbt!!.readBt(_in)//读取蓝牙缓存中的数据
@@ -80,6 +80,8 @@ class BTService : Service(), BtCallBackListening {
                     App.instance!!.LogMs!!.i("mReadSerialPort", _in.toHexString(iRet))
                     tmplen = iRet
                     val len = (_in[1].toInt() and (0xff shl 8)) + (_in[2].toInt() and 0xff) + 5
+
+                    Arrays.fill(tmp, 0x00.toByte())
                     System.arraycopy(_in, 0, tmp, 0, iRet)//获取有效数据长度
                     if (tmp[len - 1] != 0x03.toByte() || len > iRet) {//判断数据是否被截断
                         for (count in 0..9) {
@@ -95,13 +97,13 @@ class BTService : Service(), BtCallBackListening {
                         }
                     }
 
-
                     threadPool.execute {
                         //填加到线程池中
+                        var data = ByteArray(len)
+                        System.arraycopy(tmp, 0, data, 0, len)
                         Common.lock.lock()//锁
+                        App.instance!!.LogMs!!.i("threadPool","geted Lock")
                         try {
-                            var data = ByteArray(len)
-                            System.arraycopy(tmp, 0, data, 0, len)
                             var bs = BaskSplintFactory.createBaskSplint(data, this@BTService)//创建相应的工厂
                             bs!!.setData(data)//工厂处理数据
                         } catch (e: Exception) {
@@ -110,14 +112,15 @@ class BTService : Service(), BtCallBackListening {
                             e.printStackTrace()
                         } finally {
                             Common.lock.unlock()//释放锁
+                            App.instance!!.LogMs!!.i("threadPool","un Lock")
                         }
                     }
 //                    m_intent.putExtra(Common.ACTION_BT_DATA, tmp)
 //                    App.instance!!.sendBroadcast(m_intent)
 
-
+                  //  sleep(10)
                 }
-                sleep(200)
+
             }
         }
 

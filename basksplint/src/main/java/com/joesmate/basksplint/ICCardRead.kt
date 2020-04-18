@@ -10,6 +10,7 @@ import com.joesmate.ibasksplint.BaseBaskSplint
 import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.logs.LogMsImpl
 import com.joesmate.utility.*
+import com.joesmate.utility.APDU_RESP
 import vpos.apipackage.*
 
 class ICCardRead : BaseBaskSplint {
@@ -106,11 +107,11 @@ class ICCardRead : BaseBaskSplint {
                 if (0 == iRet) {
 
                     apduResp = APDU_RESP(resp)
-                    App.instance!!.LogMs!!.i("ICCardRead.08", "ApduResp.dataOut=${apduResp.dataOut.toHexString()}")
+                    App.instance!!.LogMs!!.i("ICCardRead.08", "ApduResp.dataOut=${apduResp.DataOut.toHexString()}")
 
                     var len = apduResp.LenOut.toInt()
                     var apdu = ByteArray(len + 3)
-                    System.arraycopy(apduResp.dataOut, 0, apdu, 0, len)
+                    System.arraycopy(apduResp.DataOut, 0, apdu, 0, len)
                     apdu[len + 1] = apduResp.SWA
                     apdu[len + 2] = apduResp.SWB
                     backData(apdu, apdu.size)
@@ -128,11 +129,11 @@ class ICCardRead : BaseBaskSplint {
                 if (0 == ret) {
 
                     ApduResp = APDU_RESP(resp)
-                    App.instance!!.LogMs!!.i("ICCardRead.09", "ApduResp.dataOut=${ApduResp.dataOut.toHexString()}")
+                    App.instance!!.LogMs!!.i("ICCardRead.09", "ApduResp.dataOut=${ApduResp.DataOut.toHexString()}")
 
                     var len = ApduResp.LenOut.toInt()
                     var apdu = ByteArray(len + 3)
-                    System.arraycopy(ApduResp.dataOut, 0, apdu, 0, len)
+                    System.arraycopy(ApduResp.DataOut, 0, apdu, 0, len)
                     apdu[len + 1] = ApduResp.SWA
                     apdu[len + 2] = ApduResp.SWB
                     backData(apdu, apdu.size)

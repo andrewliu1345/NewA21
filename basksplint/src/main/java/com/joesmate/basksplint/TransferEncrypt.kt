@@ -8,6 +8,7 @@ import com.joesmate.ibtcallback.BtCallBackListening
 import com.joesmate.utility.*
 import vpos.apipackage.*
 import vpos.apipackage.PasswordShow.Lib_GetPinEvent
+import java.nio.charset.Charset
 
 class TransferEncrypt : BaseBaskSplint {
     //银行私钥
@@ -60,9 +61,11 @@ class TransferEncrypt : BaseBaskSplint {
             10 -> {
                 StartPinInput()
             }
+            11 -> {
+                stopInput()
+            }
             0x0f -> {
-                Key.Lib_KbFlush()
-                backSuessData()
+                StartPlainInput()
             }
             else -> {
                 backErrData(ByteArray(1) { -1 })
@@ -222,31 +225,11 @@ class TransferEncrypt : BaseBaskSplint {
     }
 
     private fun GetPinBlock() {
-//        var pinblock = ByteArray(64)
-//        var parms = DataDispose.unPackData(m_buffer, 8)
-//
-//        var index = parms[0].toIntH().toInt()//密码序号 0~9
-//        if (index > 8) {
-//            index = 8
-//        }
-//        var min_len = parms[1].toIntH().toInt()//最小长度
-//        var max_len = parms[2].toIntH().toInt()//最大长度
-//        var carNo = parms[3]//卡号
-//        var mode = parms[4].toIntH()//加密模式 0:x9.8,1:x3.92
-//        var mark = parms[5].toIntH()//0：不带金额，1：带金额
-//        var amount = parms[6]//金额 长度小与14 后面补0
-//        var waitTime = parms[7].toIntH()//超时时间
-//        App.instance!!.TTS!!.doSpeek("请输入密码")
-//        Key.Lib_KbFlush()
-//        var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, mark.toByte(), amount, waitTime.toByte(), null)
-//        if (iRet == 0) {
-//            backData(pinblock, pinblock.size)
-//        } else {
-//            backErrData(ByteArray(1) { 1 })
-//        }
+
         SystemClock.sleep(500)
-        if (getPinBlockOK) {
-            var pin= pinBlock.trim()
+        if (getPinBlockOK) {//获取pingblock 成功后
+            var pin = pinBlock.trim()
+            App.instance!!.LogMs!!.i("GetPinBlock", "pinBlock=${pin.toHexString()}")
             backData(pin, pin.size)
         } else {
             backErrData(ByteArray(1) { 1 })
@@ -258,20 +241,27 @@ class TransferEncrypt : BaseBaskSplint {
         if (Pining) {
             var i = Lib_GetPinEvent();
 //            if (stoplen == i) {//长度结束
-//                Key.Lib_KbFlush()
+//                Loading.Lib_HsmOsmSaveObject(1)
+//                //     Key.Lib_KbFlush()
+//                SystemClock.sleep(200)
 //                backData(ByteArray(1) { 0x3f.toByte() }, 1)
+//
 //                return
 //            }
+            if (pined) {
+                backData(ByteArray(1) { 0x0d.toByte() }, 1)
+                return
+            }
             if (i > 0) {
                 backData(ByteArray(1) { 0x3f.toByte() }, 1)
+                return
             }
-            if (pined) {
-                backData(ByteArray(1) { 0x3d.toByte() }, 1)
-            }
+
             backData(ByteArray(1) { 0x00.toByte() }, 1)
             return
         }
         if (Key.Lib_KbCheck() === 0) {
+            Sys.Lib_Beep()
             var ret = Key.Lib_KbGetKey()
             if (ret == 0x1b) {
                 Key.Lib_KbFlush()
@@ -280,9 +270,10 @@ class TransferEncrypt : BaseBaskSplint {
             backData(ByteArray(1) { ret.toByte() }, 1)
 
         } else {
-            Thread.sleep(300)
+            backErrData(ByteArray(1) { 1 })
+           // Thread.sleep(300)
         }
-        backSuessData()
+        //  backSuessData()
     }
 
     private fun getMac() {
@@ -307,7 +298,7 @@ class TransferEncrypt : BaseBaskSplint {
     }
 
     private fun encryptData() {
-        var macout = ByteArray(64)
+        var macout = ByteArray(1024)
         var parms = DataDispose.unPackData(m_buffer, 4)
 
         var index = parms[0].toIntH().toInt()//密码序号 0~9
@@ -319,9 +310,11 @@ class TransferEncrypt : BaseBaskSplint {
         var mode = parms[3].toIntH().toInt()//加解密/1：加密，0：解密
         //App.instance!!.TTS!!.doSpeek("请输入密码")
         Key.Lib_KbFlush()
+        App.instance!!.LogMs!!.i("encryptData", "encryptIn=${mac.toHexString()}")
         var iRet = Pci.Lib_PciGetDes(index.toByte(), inlen, mac, macout, mode.toByte())
         if (iRet == 0) {
-            var out=macout.trim()
+            var out = macout.trim()
+            App.instance!!.LogMs!!.i("encryptData", "encryptOut=${out.toHexString()}")
             backData(out, out.size)
         } else {
             backErrData(ByteArray(1) { 1 })
@@ -330,9 +323,7 @@ class TransferEncrypt : BaseBaskSplint {
 
     private fun StartPinInput() {
         var t = Thread(Runnable {
-            pinBlock.fill(0, 64)
-            getPinBlockOK = false
-            var pinblock = ByteArray(64)
+
             var parms = DataDispose.unPackData(m_buffer, 9)
 
             var index = parms[0].toIntH().toInt()//密码序号 0~9
@@ -348,6 +339,7 @@ class TransferEncrypt : BaseBaskSplint {
             var amount = parms[6]//金额 长度小与14 后面补0
             var waitTime = parms[7].toIntH()//超时时间
             var stoptype = parms[8].toIntH().toInt()
+            App.instance!!.LogMs!!.i("StartPinInput", "carNo=${carNo.toHexString()},${carNo.toString(Charset.defaultCharset())}")
             if (stoptype == 0)//长度结束
             {
                 stoplen = max_len
@@ -356,14 +348,18 @@ class TransferEncrypt : BaseBaskSplint {
             }
             App.instance!!.TTS!!.doSpeek("请输入密码")
             Key.Lib_KbFlush()
-
+            pinBlock.fill(0, 64)
+            getPinBlockOK = false
+            var pinblock = ByteArray(64)
             Pining = true
             pined = false
-            var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, mark.toByte(), amount, waitTime.toByte(), null)
+            var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, stoptype.toByte(), amount, waitTime.toByte(), null)
             Pining = false
             pined = true
             if (iRet == 0) {
+                pinBlock.fill(0, 64)
                 System.arraycopy(pinblock, 0, pinBlock, 0, 64)
+                App.instance!!.LogMs!!.i("Lib_PciGetPin", "pinBlock=${pinBlock.toHexString()}")
                 getPinBlockOK = true
 //                backData(pinblock, pinblock.size)
             } else {
@@ -376,4 +372,14 @@ class TransferEncrypt : BaseBaskSplint {
         backSuessData()
     }
 
+    fun stopInput() {//结束pinblock输入
+   //     Loading.Lib_HsmOsmSaveObject(1)
+        backSuessData()
+    }
+
+    fun StartPlainInput() {//开始明文输入
+        App.instance!!.TTS!!.doSpeek("请按密码键盘")
+        Key.Lib_KbFlush()
+        backSuessData()
+    }
 }
