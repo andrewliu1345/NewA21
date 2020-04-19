@@ -25,6 +25,7 @@ class TransferEncrypt : BaseBaskSplint {
         private var Pining = false//正在输入密码
         private var pined = true//输入密码结束
         private var stoplen = 6;//结束长度
+        private var stopType = 0;
     }
 
     override fun setData(buffer: ByteArray) {
@@ -248,6 +249,15 @@ class TransferEncrypt : BaseBaskSplint {
 //
 //                return
 //            }
+            if (58 == i)//结束
+            {
+                if (stopType == 0) {
+                    backData(ByteArray(1) { 0x3f.toByte() }, 1)
+                } else {
+                    backData(ByteArray(1) { 0x0d.toByte() }, 1)
+                }
+                return
+            }
             if (pined) {
                 backData(ByteArray(1) { 0x0d.toByte() }, 1)
                 return
@@ -271,7 +281,7 @@ class TransferEncrypt : BaseBaskSplint {
 
         } else {
             backErrData(ByteArray(1) { 1 })
-           // Thread.sleep(300)
+            // Thread.sleep(300)
         }
         //  backSuessData()
     }
@@ -299,7 +309,7 @@ class TransferEncrypt : BaseBaskSplint {
 
     private fun encryptData() {
         var macout = ByteArray(1024)
-        var parms = DataDispose.unPackData(m_buffer, 4)
+        var parms = DataDispose.unPackData(m_buffer, 6)
 
         var index = parms[0].toIntH().toInt()//密码序号 0~9
         if (index > 8) {
@@ -308,16 +318,31 @@ class TransferEncrypt : BaseBaskSplint {
         var inlen = parms[1].toIntH().toShort()//长度
         var mac = parms[2]//需要加密的数据
         var mode = parms[3].toIntH().toInt()//加解密/1：加密，0：解密
-        //App.instance!!.TTS!!.doSpeek("请输入密码")
-        Key.Lib_KbFlush()
-        App.instance!!.LogMs!!.i("encryptData", "encryptIn=${mac.toHexString()}")
-        var iRet = Pci.Lib_PciGetDes(index.toByte(), inlen, mac, macout, mode.toByte())
-        if (iRet == 0) {
-            var out = macout.trim()
-            App.instance!!.LogMs!!.i("encryptData", "encryptOut=${out.toHexString()}")
-            backData(out, out.size)
-        } else {
-            backErrData(ByteArray(1) { 1 })
+        var type = parms[4].toIntH().toInt()//加解密模式/1：CBC，0：ECB
+        var vi = parms[5]
+
+        if (type == 0) {
+            App.instance!!.LogMs!!.i("encryptData", "encryptIn=${mac.toHexString()}")
+            var iRet = Pci.Lib_PciGetDes(index.toByte(), inlen, mac, macout, mode.toByte())
+            if (iRet == 0) {
+                var out = macout.trim()
+                App.instance!!.LogMs!!.i("encryptData", "encryptOut=${out.toHexString()}")
+                backData(out, out.size)
+            } else {
+                backErrData(ByteArray(1) { 1 })
+            }
+        }
+        if (type == 1) {
+            App.instance!!.LogMs!!.i("encryptData", "encryptIn=${mac.toHexString()}")
+
+            var iRet = Pci.Lib_PciGetDesCBC(index.toByte(), inlen, mac, vi, macout, mode.toByte())
+            if (iRet == 0) {
+                var out = macout.trim()
+                App.instance!!.LogMs!!.i("encryptData", "encryptOut=${out.toHexString()}")
+                backData(out, out.size)
+            } else {
+                backErrData(ByteArray(1) { 1 })
+            }
         }
     }
 
@@ -338,9 +363,9 @@ class TransferEncrypt : BaseBaskSplint {
             var mark = parms[5].toIntH()//0：不带金额，1：带金额
             var amount = parms[6]//金额 长度小与14 后面补0
             var waitTime = parms[7].toIntH()//超时时间
-            var stoptype = parms[8].toIntH().toInt()
+            stopType = parms[8].toIntH().toInt()
             App.instance!!.LogMs!!.i("StartPinInput", "carNo=${carNo.toHexString()},${carNo.toString(Charset.defaultCharset())}")
-            if (stoptype == 0)//长度结束
+            if (stopType == 0)//长度结束
             {
                 stoplen = max_len
             } else {
@@ -353,7 +378,7 @@ class TransferEncrypt : BaseBaskSplint {
             var pinblock = ByteArray(64)
             Pining = true
             pined = false
-            var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, stoptype.toByte(), amount, waitTime.toByte(), null)
+            var iRet = Pci.Lib_PciGetPin(index.toByte(), min_len.toByte(), max_len.toByte(), mode.toByte(), carNo, pinblock, stopType.toByte(), amount, waitTime.toByte(), null)
             Pining = false
             pined = true
             if (iRet == 0) {
@@ -373,7 +398,7 @@ class TransferEncrypt : BaseBaskSplint {
     }
 
     fun stopInput() {//结束pinblock输入
-   //     Loading.Lib_HsmOsmSaveObject(1)
+        //     Loading.Lib_HsmOsmSaveObject(1)
         backSuessData()
     }
 
