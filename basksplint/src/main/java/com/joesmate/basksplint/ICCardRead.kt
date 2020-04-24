@@ -82,7 +82,7 @@ class ICCardRead : BaseBaskSplint {
                 if (iRet >= 0)
                     backData(ByteArray(1) { iRet.toByte() }, 1);
                 else
-                    backErrData(ByteArray(0));
+                    backData(ByteArray(1) { -1 }, 1);
             }
             7 -> {//下电
                 var parms = DataDispose.unPackData(m_buffer, 1)

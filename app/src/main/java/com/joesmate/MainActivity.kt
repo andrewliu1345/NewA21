@@ -44,35 +44,39 @@ class MainActivity : AppCompatActivity() {
             Thread.sleep(4000)
             App.instance!!.TTS!!.doSpeek("欢迎使用")
         }).start()
-        Thread(Runnable {//获取电量
-            while (true) {
-                var battery = batteryManager!!.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-                if (battery > 15)
-                    SystemClock.sleep(129000)//每两分钟检测一次
-                else {
-                    SystemClock.sleep(5000)//每5秒提醒一次
-                    App.instance!!.TTS!!.doSpeek("电量低，请及时充电")
-                }
 
-
-            }
-        }).start()
+//        Thread(Runnable {//获取电量
+//            while (true) {
+//                var battery = batteryManager!!.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+//                if (battery > 15)
+//                    SystemClock.sleep(129000)//每两分钟检测一次
+//                else {
+//                    SystemClock.sleep(5000)//每5秒提醒一次
+//                    App.instance!!.TTS!!.doSpeek("电量低，请及时充电")
+//                }
+//
+//
+//            }
+//        }).start()
         iniDevice()
 
 
-
-        intentFilter = IntentFilter()
-        //这里定义接受器监听广播的类型，这里添加相应的广播
-        intentFilter!!.addAction("android.bluetooth.device.action.PAIRING_REQUEST");
-        //实例化接收器
-        myBroadcastReceiver = BluetoothConnectActivityReceiver()
         //注册事件，用与实现蓝牙的自动配对
+        intentFilter = IntentFilter()
+        intentFilter!!.addAction("android.bluetooth.device.action.PAIRING_REQUEST");
+        myBroadcastReceiver = BluetoothConnectActivityReceiver()
         registerReceiver(myBroadcastReceiver, intentFilter)
+
+        //注册电池状态检测
+        val filter = IntentFilter()
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED)
+        registerReceiver(BatteryReceiver, filter);
 
 //Init.execute()
     }
 
     override fun onDestroy() {
+        unregisterReceiver(BatteryReceiver);
         financiaModGpio.offPower()
         unregisterReceiver(myBroadcastReceiver)
         super.onDestroy()
@@ -136,6 +140,91 @@ class MainActivity : AppCompatActivity() {
                 super.onProgressUpdate(*values)
             }
         }.execute()
+    }
+
+    // 声明广播接受者对象
+    private val BatteryReceiver = object : BroadcastReceiver() {
+        var firstTime = System.currentTimeMillis();
+        var secTime: Long = 0;
+        override fun onReceive(context: Context, intent: Intent) {
+            // TODO Auto-generated method stub
+            val action = intent.action
+            if (action == Intent.ACTION_BATTERY_CHANGED) {
+                // 得到电池状态：
+                // BatteryManager.BATTERY_STATUS_CHARGING：充电状态。
+                // BatteryManager.BATTERY_STATUS_DISCHARGING：放电状态。
+                // BatteryManager.BATTERY_STATUS_NOT_CHARGING：未充满。
+                // BatteryManager.BATTERY_STATUS_FULL：充满电。
+                // BatteryManager.BATTERY_STATUS_UNKNOWN：未知状态。
+                val status = intent.getIntExtra("status", 0)
+                // 得到健康状态：
+                // BatteryManager.BATTERY_HEALTH_GOOD：状态良好。
+                // BatteryManager.BATTERY_HEALTH_DEAD：电池没有电。
+                // BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE：电池电压过高。
+                // BatteryManager.BATTERY_HEALTH_OVERHEAT：电池过热。
+                // BatteryManager.BATTERY_HEALTH_UNKNOWN：未知状态。
+                val health = intent.getIntExtra("health", 0)
+                // boolean类型
+                val present = intent.getBooleanExtra("present", false)
+                // 得到电池剩余容量
+                val level = intent.getIntExtra("level", 0)
+                // 得到电池最大值。通常为100。
+                val scale = intent.getIntExtra("scale", 0)
+                // 得到图标ID
+                val icon_small = intent.getIntExtra("icon-small", 0)
+                // 充电方式：　BatteryManager.BATTERY_PLUGGED_AC：AC充电。　BatteryManager.BATTERY_PLUGGED_USB：USB充电。
+                val plugged = intent.getIntExtra("plugged", 0)
+                // 得到电池的电压
+                val voltage = intent.getIntExtra("voltage", 0)
+                // 得到电池的温度,0.1度单位。例如 表示197的时候，意思为19.7度
+                val temperature = intent.getIntExtra("temperature", 0)
+                // 得到电池的类型
+                val technology = intent.getStringExtra("technology")
+                // 得到电池状态
+                var statusString = ""
+                when (status) {
+                    BatteryManager.BATTERY_STATUS_UNKNOWN -> statusString = "unknown"
+                    BatteryManager.BATTERY_STATUS_CHARGING -> statusString = "charging"
+                    BatteryManager.BATTERY_STATUS_DISCHARGING -> statusString = "discharging"
+                    BatteryManager.BATTERY_STATUS_NOT_CHARGING -> statusString = "not charging"
+                    BatteryManager.BATTERY_STATUS_FULL -> statusString = "full"
+                }
+                //得到电池的寿命状态
+                var healthString = ""
+                when (health) {
+                    BatteryManager.BATTERY_HEALTH_UNKNOWN -> healthString = "unknown"
+                    BatteryManager.BATTERY_HEALTH_GOOD -> healthString = "good"
+                    BatteryManager.BATTERY_HEALTH_OVERHEAT -> healthString = "overheat"
+                    BatteryManager.BATTERY_HEALTH_DEAD -> healthString = "dead"
+                    BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> healthString = "voltage"
+                    BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> healthString = "unspecified failure"
+                }
+                //得到充电模式
+                var acString = ""
+                when (plugged) {
+                    BatteryManager.BATTERY_PLUGGED_AC -> acString = "plugged ac"
+                    BatteryManager.BATTERY_PLUGGED_USB -> acString = "plugged usb"
+                }
+                //显示电池信息
+//                tvBattery.setText("""
+//    电池的状态：$statusString
+//    健康值: $healthString
+//    电池剩余容量： $level
+//    电池的最大值：$scale
+//    小图标：$icon_small
+//    充电方式：$plugged
+//    充电方式: $acString
+//    电池的电压：$voltage
+//    电池的温度：${temperature.toFloat() * 0.1}
+//    电池的类型：$technology
+//    """.trimIndent())
+                secTime = System.currentTimeMillis()
+                if (level < 15 && status == BatteryManager.BATTERY_STATUS_DISCHARGING && secTime - firstTime > 5000) {
+                    App.instance!!.TTS!!.doSpeek("电量低，请及时充电")
+                    firstTime = secTime
+                }
+            }
+        }
     }
 
 

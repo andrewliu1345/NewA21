@@ -87,14 +87,14 @@ class IDCardRead : BaseBaskSplint {//身份证模块
         } else {
             backErrData(ByteArray(1) { 0x01 })
         }
-        Thread.sleep(400)
-        getSAMID()//检查身份证模块状态
+//        Thread.sleep(400)
+//        getSAMID()//检查身份证模块状态
 
     }
 
     private fun closeIDCard() {
         IDCard.Lib_IDCardClose()
-    backSuessData()
+        backSuessData()
 
     }
 
@@ -119,7 +119,7 @@ class IDCardRead : BaseBaskSplint {//身份证模块
             backErrData(ByteArray(1) { 0x01 })//返回错误的数据
             return
         } finally {
-           // IDCard.Lib_IDCardClose()//关闭身份证模块
+            // IDCard.Lib_IDCardClose()//关闭身份证模块
         }
         App.instance!!.TTS!!.doSpeek("读取身份证成功")
         ReadOK = false

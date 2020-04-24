@@ -42,10 +42,12 @@ class MposUtility {
                     }
                     2 -> {
                         var iRet = FindNfcCard()
-                        if (FindNfcCard() > 0)
+                        if (iRet > 0)
                             return iRet
                         if (FindICCard() == 0)
                             return 0
+//                        if (FindMcr()==0)
+//                            return 0
                     }
                     else -> {
                         return -1
