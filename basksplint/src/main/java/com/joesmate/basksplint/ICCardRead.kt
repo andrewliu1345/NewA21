@@ -78,7 +78,7 @@ class ICCardRead : BaseBaskSplint {
                 var parms = DataDispose.unPackData(m_buffer, 2)
                 var icType = parms[0].toIntH()
                 var timeout = parms[1].toIntH()
-                var iRet = FindCard(icType.toInt(), timeout.toInt())//
+                var iRet = FindCard(icType.toInt())//
                 if (iRet >= 0)
                     backData(ByteArray(1) { iRet.toByte() }, 1);
                 else

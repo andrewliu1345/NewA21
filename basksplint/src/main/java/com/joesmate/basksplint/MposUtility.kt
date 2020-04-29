@@ -14,6 +14,7 @@ class MposUtility {
 
         private val mLog: LogMsImpl? = App.instance!!.LogMs
         var Slot = -1;//通道
+        var PiccSlot = -1//非接标识
         var CarType: Byte = -1//卡类型
         //找卡
         /**
@@ -22,45 +23,80 @@ class MposUtility {
          */
         public fun FindCard(type: Int, timeOut: Int): Int {
 
+
+            var start = System.currentTimeMillis()
+            while (System.currentTimeMillis() - start < timeOut) {
+                return FindCard(type)
+                Thread.sleep(10)
+            }
+            return -1
+        }
+
+        /**
+         * 0为接触
+         * 1为非接
+         * 2为搜索0和1
+         */
+        public fun FindCard(type: Int): Int {
+
             val lpAtr = ByteArray(128)
             val cardtype = ByteArray(1)
             val uid = ByteArray(64)
             var start = System.currentTimeMillis()
-            while (System.currentTimeMillis() - start < timeOut) {
-                when (type) {
-                    0 -> {
-                        if (FindICCard() == 0)
-                            return 0
-                    }
 
-                    1 -> {
-
-                        var iRet = FindNfcCard()
-                        if (iRet >= 0)
-                            return iRet
-
-                    }
-                    2 -> {
-                        var iRet = FindNfcCard()
-                        if (iRet > 0)
-                            return iRet
-                        if (FindICCard() == 0)
-                            return 0
-//                        if (FindMcr()==0)
-//                            return 0
-                    }
-                    else -> {
-                        return -1
+            when (type) {
+                0 -> {
+                    if (FindICCard() == 0) {
+                        CarType = 0
+                        return 0
                     }
                 }
-                Thread.sleep(10)
+
+                1 -> {
+
+                    var iRet = FindNfcCard()
+                    if (iRet >= 0) {
+                        CarType = 1
+                        return iRet
+                    }
+
+                }
+                2 -> {
+                    var iRet = FindNfcCard()
+                    if (iRet > 0) {
+                        CarType = 0
+                        return iRet
+                    }
+//                    if (CarType==0.toByte())
+//                    {
+//                        CarType=-1
+//                        return iRet
+//                    }
+                    if (FindICCard() == 0) {
+                        CarType = 1
+                        return 0
+                    }
+//                        if (FindMcr()==0)
+//                            return 0
+                }
+                else -> {
+                    return -1
+                }
             }
+            Thread.sleep(10)
+
             return -1
         }
 
         //打ICCard
         public fun FindICCard(): Int {
 
+            if (Slot != -1) {//判断上一张卡否在线
+                var iret = Icc.Lib_IccCheck(Slot.toByte())
+                if (iret != 0)
+                    Slot = -1
+                return iret
+            }
             for (j in 0..3) {
                 //  var ret = Icc.Lib_IccCheck(j.toByte())
                 //   if (ret == 0) {
@@ -73,8 +109,9 @@ class MposUtility {
                     var ret = Icc.Lib_IccOpen(j.toByte(), i.toByte(), lpAtr)
                     if (ret == 0) {
                         Slot = j;
-                        App.instance!!.LogMs!!.e("FindICCard", "Slot=${Slot}")
+                        mLog!!.e("FindICCard", "Slot=${Slot}")
                         mLog!!.i("FindICCard,成功", "2.${lpAtr.toHexString()}")
+                        PiccSlot = -1
                         return 0
                     } else {
                         Icc.Lib_IccClose(j.toByte())
@@ -96,6 +133,8 @@ class MposUtility {
             }
             ret = PiccCheck()
             if (ret > 0) {
+                PiccSlot = ret
+                Slot = -1
                 return ret
             }
 
@@ -106,6 +145,12 @@ class MposUtility {
         private fun PiccCheck(): Int {
             val cardtype = ByteArray(3)
             val uid = ByteArray(50)
+//            if (PiccSlot > 0) {//上一张卡是Nfc
+//                var Ret = Picc.Lib_PiccCheck(PiccSlot.toByte(), cardtype, uid)
+//                if (Ret != 0)
+//                    PiccSlot = -1
+//                return Ret
+//            }
             var ret = Picc.Lib_PiccCheck('A'.toByte(), cardtype, uid)
             if (ret == 0) {
                 if (cardtype[1].toInt() == 'M'.toInt()) {

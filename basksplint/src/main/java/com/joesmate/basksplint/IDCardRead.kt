@@ -78,13 +78,14 @@ class IDCardRead : BaseBaskSplint {//身份证模块
      * 打开身份证模块
      */
     private fun OpenIDCard() {
-
+        App.instance!!.TTS!!.doSpeek("请将您的身份证放在读卡区域内")
         Fingerprint.Lib_SetFgBaudrate(115200)//恢复身份证波特率
         IDCard.Lib_IDCardOpen()//打开身份证模块
         var samid = getSAMID()
         if (samid.isNotEmpty()) {
             backSuessData()
         } else {
+            App.instance!!.TTS!!.doSpeek("身份证模块初始化失败")
             backErrData(ByteArray(1) { 0x01 })
         }
 //        Thread.sleep(400)
@@ -107,7 +108,7 @@ class IDCardRead : BaseBaskSplint {//身份证模块
         val itimeout = lParams[0].toIntH()
         Arrays.fill(retBuffer, 0)
         try {
-            App.instance!!.TTS!!.doSpeek("请放身份证")
+
             var iRet = IDCard.Lib_IDCardReadData(retBuffer, 0, itimeout.toInt()) //IDCard.Lib_IDCardRead(idcardinfo, imgdata, 30)
             if (iRet != 0) {
                 App.instance!!.TTS!!.doSpeek("读取身份证失败")
